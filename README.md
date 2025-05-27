@@ -83,6 +83,206 @@ cargo build --release
 5. 📤 选择导出格式
 6. 💾 导出数据
 
+### 🎯 命令行使用
+
+#### 基本语法
+```powershell
+furina_ocr [选项] [命令] [参数]
+```
+
+#### 📤 导出格式指令
+
+##### GOOD格式导出
+```powershell
+# 导出为GOOD格式
+furina_ocr export --format good --output artifacts.json
+
+# 指定输入图片目录
+furina_ocr export --format good --input ./screenshots --output artifacts_good.json
+
+# 批量处理
+furina_ocr export --format good --batch --input ./images --output ./exports/good_format.json
+```
+
+##### Mona格式导出
+```powershell
+# 导出为Mona格式
+furina_ocr export --format mona --output artifacts_mona.json
+
+# 包含详细统计信息
+furina_ocr export --format mona --stats --output mona_with_stats.json
+
+# 指定语言（中文/英文）
+furina_ocr export --format mona --language zh-CN --output mona_cn.json
+```
+
+##### Mingyu Lab格式导出
+```powershell
+# 导出为Mingyu Lab格式
+furina_ocr export --format mingyu --output artifacts_mingyu.json
+
+# 包含评分信息
+furina_ocr export --format mingyu --include-score --output mingyu_scored.json
+
+# 过滤特定品质
+furina_ocr export --format mingyu --rarity 5 --output five_star_artifacts.json
+```
+
+##### CSV格式导出
+```powershell
+# 导出为CSV格式
+furina_ocr export --format csv --output artifacts.csv
+
+# 包含所有属性列
+furina_ocr export --format csv --full-columns --output detailed_artifacts.csv
+```
+
+#### 🔧 所有命令功能
+
+##### 1. 识别命令 (recognize)
+```powershell
+# 识别单张图片
+furina_ocr recognize --input artifact.png
+
+# 识别多张图片
+furina_ocr recognize --input ./screenshots --batch
+
+# 指定识别模型
+furina_ocr recognize --model ./models/custom_model.onnx --input artifact.png
+
+# 调整识别精度
+furina_ocr recognize --confidence 0.85 --input artifact.png
+```
+
+##### 2. 导出命令 (export)
+```powershell
+# 基本导出
+furina_ocr export --format [good|mona|mingyu|csv] --output filename
+
+# 高级导出选项
+furina_ocr export --format good \
+  --input ./screenshots \
+  --output artifacts.json \
+  --filter-rarity 4,5 \
+  --include-metadata \
+  --pretty-print
+```
+
+##### 3. 批量处理命令 (batch)
+```powershell
+# 批量处理目录
+furina_ocr batch --input ./images --output ./results
+
+# 并行处理
+furina_ocr batch --input ./images --output ./results --threads 4
+
+# 递归处理子目录
+furina_ocr batch --input ./images --output ./results --recursive
+```
+
+##### 4. 配置命令 (config)
+```powershell
+# 查看当前配置
+furina_ocr config show
+
+# 设置默认导出格式
+furina_ocr config set default-format good
+
+# 设置模型路径
+furina_ocr config set model-path ./models/model.onnx
+
+# 重置配置
+furina_ocr config reset
+```
+
+##### 5. 验证命令 (validate)
+```powershell
+# 验证识别结果
+furina_ocr validate --input result.json
+
+# 验证模型文件
+furina_ocr validate --model ./models/model.onnx
+
+# 验证配置文件
+furina_ocr validate --config ./config.toml
+```
+
+##### 6. 信息命令 (info)
+```powershell
+# 显示版本信息
+furina_ocr info --version
+
+# 显示系统信息
+furina_ocr info --system
+
+# 显示支持的格式
+furina_ocr info --formats
+
+# 显示模型信息
+furina_ocr info --model
+```
+
+#### 🎛️ 通用选项
+
+| 选项 | 简写 | 描述 | 示例 |
+|------|------|------|------|
+| `--help` | `-h` | 显示帮助信息 | `furina_ocr -h` |
+| `--version` | `-V` | 显示版本号 | `furina_ocr -V` |
+| `--verbose` | `-v` | 详细输出 | `furina_ocr -v export` |
+| `--quiet` | `-q` | 静默模式 | `furina_ocr -q export` |
+| `--config` | `-c` | 指定配置文件 | `furina_ocr -c config.toml` |
+| `--log-level` | | 设置日志级别 | `--log-level debug` |
+
+#### 📁 配置文件示例
+
+创建 `config.toml` 文件：
+```toml
+[ocr]
+model_path = "./models/model_training.onnx"
+confidence_threshold = 0.8
+language = "zh-CN"
+
+[export]
+default_format = "good"
+include_metadata = true
+pretty_print = true
+
+[batch]
+max_threads = 4
+recursive = false
+skip_errors = true
+
+[logging]
+level = "info"
+file = "./logs/furina_ocr.log"
+```
+
+#### 🔄 使用示例
+
+##### 完整工作流程
+```powershell
+# 1. 配置环境
+furina_ocr config set model-path "./models/model_training.onnx"
+
+# 2. 批量识别截图
+furina_ocr batch --input "./screenshots" --output "./results" --threads 4
+
+# 3. 导出为GOOD格式
+furina_ocr export --format good --input "./results" --output "my_artifacts.json" --pretty-print
+
+# 4. 验证结果
+furina_ocr validate --input "my_artifacts.json"
+```
+
+##### 快速导出
+```powershell
+# 一键导出（自动识别 + 导出）
+furina_ocr quick-export --input "./screenshots" --format good --output "artifacts.json"
+
+# 多格式同时导出
+furina_ocr multi-export --input "./screenshots" --formats good,mona,csv --output-dir "./exports"
+```
+
 ## 🛠️ 开发环境设置
 
 1. 安装开发依赖：
