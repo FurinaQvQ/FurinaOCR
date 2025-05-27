@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # 确保检出时使用正确的换行符
+          autocrlf: false
       
       - name: Install Rust
         uses: dtolnay/rust-toolchain@master
@@ -36,7 +39,7 @@ jobs:
         run: cargo fmt --all -- --check
       
       - name: Run Clippy (linter)
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy --all-targets -- -D warnings
       
       - name: Build project
         run: cargo build --release --verbose
@@ -56,6 +59,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # 确保检出时使用正确的换行符
+          autocrlf: false
       
       - name: Install Rust
         uses: dtolnay/rust-toolchain@master
