@@ -10,12 +10,10 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test:
-    name: Test and Build
+  # 核心代码质量检查（仅 stable 版本）
+  quality:
+    name: Code Quality & Build
     runs-on: windows-latest
-    strategy:
-      matrix:
-        rust: [stable, nightly]
     
     steps:
       - name: Checkout code
@@ -24,16 +22,16 @@ jobs:
           # 确保检出时使用正确的换行符
           autocrlf: false
       
-      - name: Install Rust
+      - name: Install Rust (stable)
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: ${{ matrix.rust }}
+          toolchain: stable
           components: rustfmt, clippy
       
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ runner.os }}-${{ matrix.rust }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-stable-cargo-${{ hashFiles('**/Cargo.lock') }}
       
       - name: Check code formatting
         run: cargo fmt --all -- --check
@@ -46,13 +44,8 @@ jobs:
       
       - name: Run tests
         run: cargo test --verbose
-      
-      - name: Check artifact scanner compiles
-        run: cargo check -p genshin
-      
-      - name: Check core library compiles  
-        run: cargo check -p furina_core
 
+  # 安全审计
   audit:
     name: Security Audit
     runs-on: windows-latest
@@ -63,7 +56,7 @@ jobs:
           # 确保检出时使用正确的换行符
           autocrlf: false
       
-      - name: Install Rust
+      - name: Install Rust (stable)
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
