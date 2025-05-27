@@ -10,10 +10,6 @@
   <img src="https://img.shields.io/badge/Platform-Windows-blue?style=for-the-badge&logo=windows" alt="Platform"/>
 </p>
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/FurinaQvQ/FurinaOCR/main/assets/logo.png" width="120" alt="FurinaOCR Logo"/>
-</p>
-
 > 🎮 **原神圣遗物识别神器** | 🚀 极速 · 高精度 · 多格式导出  
 > 让你的圣遗物管理更轻松，数据更专业！
 
