@@ -10,7 +10,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # 核心代码质量检查（仅 stable 版本）
+  # 核心代码质量检查（使用 nightly 版本支持项目特性）
   quality:
     name: Code Quality & Build
     runs-on: windows-latest
@@ -18,20 +18,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          # 确保检出时使用正确的换行符
-          autocrlf: false
       
-      - name: Install Rust (stable)
+      - name: Install Rust (nightly)
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: stable
+          toolchain: nightly
           components: rustfmt, clippy
       
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ runner.os }}-stable-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-nightly-cargo-${{ hashFiles('**/Cargo.lock') }}
       
       - name: Check code formatting
         run: cargo fmt --all -- --check
@@ -52,14 +49,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          # 确保检出时使用正确的换行符
-          autocrlf: false
       
-      - name: Install Rust (stable)
+      - name: Install Rust (nightly)
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: stable
+          toolchain: nightly
       
       - name: Install cargo-audit
         run: cargo install cargo-audit
