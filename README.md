@@ -37,7 +37,7 @@ cargo build --release
 
 4. 运行程序：
 ```powershell
-.\target\release\furina_ocr.exe
+.\target\release\FurinaOCR.exe
 ```
 
 如果遇到编译错误，请确保：
@@ -54,98 +54,6 @@ cargo build --release
 4. 选择要导出的圣遗物
 5. 选择导出格式
 6. 导出数据
-
-## 导出格式
-
-### GOOD格式
-```json
-{
-  "format": "GOOD",
-  "version": 2,
-  "source": "FurinaOCR",
-  "artifacts": [
-    {
-      "setKey": "EmblemOfSeveredFate",
-      "slotKey": "plume",
-      "level": 20,
-      "rarity": 5,
-      "mainStatKey": "atk",
-      "substats": [
-        {"key": "critRate_", "value": 3.5},
-        {"key": "critDMG_", "value": 7.0},
-        {"key": "atk_", "value": 4.7},
-        {"key": "def_", "value": 5.8}
-      ]
-    }
-  ]
-}
-```
-
-### Mona格式
-```json
-{
-  "version": "2.0",
-  "source": "FurinaOCR",
-  "artifacts": [
-    {
-      "setName": "绝缘之旗印",
-      "position": "死之羽",
-      "level": 20,
-      "star": 5,
-      "mainTag": {
-        "name": "攻击力",
-        "value": 311
-      },
-      "normalTags": [
-        {"name": "暴击率", "value": "3.5%"},
-        {"name": "暴击伤害", "value": "7.0%"},
-        {"name": "攻击力百分比", "value": "4.7%"},
-        {"name": "防御力百分比", "value": "5.8%"}
-      ]
-    }
-  ]
-}
-```
-
-### Mingyu Lab格式
-```json
-{
-  "version": "1.0",
-  "source": "FurinaOCR",
-  "artifacts": [
-    {
-      "set": "绝缘之旗印",
-      "slot": "羽",
-      "level": 20,
-      "rarity": 5,
-      "main": {
-        "stat": "攻击力",
-        "value": 311
-      },
-      "sub": [
-        {"stat": "暴击率", "value": "3.5%"},
-        {"stat": "暴击伤害", "value": "7.0%"},
-        {"stat": "攻击力百分比", "value": "4.7%"},
-        {"stat": "防御力百分比", "value": "5.8%"}
-      ]
-    }
-  ]
-}
-```
-
-## 开发说明
-
-### 项目结构
-```
-FurinaOCR/
-├── genshin/              # 原神相关功能模块
-│   ├── src/
-│   │   ├── artifact/    # 圣遗物数据结构
-│   │   ├── export/      # 导出功能
-│   │   └── ocr/         # OCR识别功能
-├── src/                  # 主程序
-└── tests/               # 测试文件
-```
 
 ### 开发环境设置
 1. 安装开发依赖：
@@ -179,7 +87,7 @@ cargo clippy
 
 ## 许可证
 
-本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件
+本项目采用 GPL-2.0-or-later 许可证 - 详见 [LICENSE](LICENSE) 文件
 
 ## 致谢
 
