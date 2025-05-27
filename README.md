@@ -1,17 +1,13 @@
-# FurinaOCR
+# <p align="center">FurinaOCR</p>
 
 <p align="center">
   <a href="https://www.gnu.org/licenses/old-licenses/gpl-2.0-standalone.html">
     <img src="https://img.shields.io/badge/License-GPL%202.0--or--later-blue.svg?style=for-the-badge" alt="GPL-2.0-or-later License"/>
   </a>
   <img src="https://img.shields.io/github/actions/workflow/status/FurinaQvQ/FurinaOCR/ci.yml?label=CI&logo=github&style=for-the-badge" alt="CI Status"/>
-  <img src="https://img.shields.io/github/license/FurinaQvQ/FurinaOCR?style=for-the-badge" alt="License"/>
   <img src="https://img.shields.io/github/stars/FurinaQvQ/FurinaOCR?style=for-the-badge" alt="Stars"/>
-  <img src="https://img.shields.io/github/issues/FurinaQvQ/FurinaOCR?style=for-the-badge" alt="Issues"/>
-  <img src="https://img.shields.io/github/pull-requests/FurinaQvQ/FurinaOCR?style=for-the-badge" alt="PRs"/>
   <img src="https://img.shields.io/badge/Rust-nightly-orange?style=for-the-badge&logo=rust" alt="Rust Nightly"/>
   <img src="https://img.shields.io/badge/Platform-Windows-blue?style=for-the-badge&logo=windows" alt="Platform"/>
-  <img src="https://img.shields.io/badge/Contributions-welcome-brightgreen?style=for-the-badge" alt="Contributions"/>
 </p>
 
 <p align="center">
