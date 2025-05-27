@@ -383,8 +383,8 @@ fn equip_from_zh_cn(equip: Option<&str>) -> &'static str {
 /// # 示例
 ///
 /// ```rust
-/// use crate::export::artifact::good::GOODFormat;
-/// use crate::artifact::GenshinArtifact;
+/// use genshin::export::artifact::good::GOODFormat;
+/// use genshin::artifact::GenshinArtifact;
 /// use anyhow::Result;
 ///
 /// fn main() -> Result<()> {
@@ -414,8 +414,8 @@ impl<'a> GOODFormat<'a> {
     ///
     /// # 示例
     /// ```rust
-    /// use crate::export::artifact::good::GOODFormat;
-    /// use crate::artifact::GenshinArtifact;
+    /// use genshin::export::artifact::good::GOODFormat;
+    /// use genshin::artifact::GenshinArtifact;
     /// use anyhow::Result;
     ///
     /// fn main() -> Result<()> {
