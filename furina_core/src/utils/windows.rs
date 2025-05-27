@@ -75,6 +75,7 @@ unsafe fn get_client_rect_unsafe(hwnd: HWND) -> Result<Rect<i32>> {
     Ok(Rect { left, top, width, height })
 }
 
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub fn get_client_rect(hwnd: HWND) -> Result<Rect<i32>> {
     unsafe { get_client_rect_unsafe(hwnd) }
 }
@@ -153,6 +154,7 @@ pub fn set_dpi_awareness() {
     }
 }
 
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub fn show_window_and_set_foreground(hwnd: HWND) {
     unsafe {
         ShowWindow(hwnd, SW_RESTORE);
@@ -198,6 +200,7 @@ unsafe fn get_window_title_unsafe(hwnd: HWND) -> Option<String> {
     }
 }
 
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub fn get_window_title(hwnd: HWND) -> Option<String> {
     unsafe { get_window_title_unsafe(hwnd) }
 }

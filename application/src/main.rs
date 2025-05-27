@@ -71,25 +71,25 @@ fn main() {
 
     // 直接输出到控制台，不依赖日志
     println!("FurinaOCR v0.1.0 - 专注于原神圣遗物扫描的高效工具");
-    println!("=".repeat(60));
-    
+    println!("{}", "=".repeat(60));
+
     // 显示配置信息
     println!("配置信息:");
     println!("  最小星级: {}", args.min_star);
     println!("  导出格式: {}", args.format);
-    
+
     if let Some(output_dir) = &args.output_dir {
         println!("  导出目录: {}", output_dir);
     }
-    
+
     if args.debug {
         println!("  调试模式: 已启用");
     }
-    
+
     if args.fast_mode {
         println!("  快速模式: 已启用");
     }
-    
+
     if args.performance_monitor {
         println!("  性能监控: 已启用");
     }
@@ -99,6 +99,6 @@ fn main() {
     println!("   请按照README说明获取模型文件后重新编译");
     println!();
     println!("✅ 程序配置验证成功（演示模式）");
-    
+
     press_any_key_to_continue();
 }
