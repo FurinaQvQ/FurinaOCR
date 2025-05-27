@@ -128,10 +128,3 @@ cargo clippy
 
 - 👤 项目维护者：[FurinaQvQ](https://github.com/FurinaQvQ)
 - 📦 项目仓库：[FurinaOCR](https://github.com/FurinaQvQ/FurinaOCR)
-
-## 📝 更新日志
-
-### v0.1.0 (2024-03-xx)
-- 🎉 初始版本发布
-- 📤 支持GOOD、Mona、Mingyu Lab格式导出
-- 👁️ 实现基本的圣遗物识别功能
