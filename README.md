@@ -1,5 +1,28 @@
 # FurinaOCR
 
+<p align="center">
+  <a href="https://www.gnu.org/licenses/old-licenses/gpl-2.0-standalone.html">
+    <img src="https://img.shields.io/badge/License-GPL%202.0--or--later-blue.svg?style=for-the-badge" alt="GPL-2.0-or-later License"/>
+  </a>
+  <img src="https://img.shields.io/github/actions/workflow/status/FurinaQvQ/FurinaOCR/ci.yml?label=CI&logo=github&style=for-the-badge" alt="CI Status"/>
+  <img src="https://img.shields.io/github/license/FurinaQvQ/FurinaOCR?style=for-the-badge" alt="License"/>
+  <img src="https://img.shields.io/github/stars/FurinaQvQ/FurinaOCR?style=for-the-badge" alt="Stars"/>
+  <img src="https://img.shields.io/github/issues/FurinaQvQ/FurinaOCR?style=for-the-badge" alt="Issues"/>
+  <img src="https://img.shields.io/github/pull-requests/FurinaQvQ/FurinaOCR?style=for-the-badge" alt="PRs"/>
+  <img src="https://img.shields.io/badge/Rust-nightly-orange?style=for-the-badge&logo=rust" alt="Rust Nightly"/>
+  <img src="https://img.shields.io/badge/Platform-Windows-blue?style=for-the-badge&logo=windows" alt="Platform"/>
+  <img src="https://img.shields.io/badge/Contributions-welcome-brightgreen?style=for-the-badge" alt="Contributions"/>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/FurinaQvQ/FurinaOCR/main/assets/logo.png" width="120" alt="FurinaOCR Logo"/>
+</p>
+
+> 🎮 **原神圣遗物识别神器** | 🚀 极速 · 高精度 · 多格式导出  
+> 让你的圣遗物管理更轻松，数据更专业！
+
+---
+
 FurinaOCR 是一个基于深度学习的原神圣遗物识别工具，能够自动识别游戏中的圣遗物属性并导出为多种格式。
 
 ## 功能特性
