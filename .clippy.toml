@@ -1,0 +1,75 @@
+# 代码检查配置
+cognitive-complexity-threshold = 25
+too-many-arguments-threshold = 10
+type-complexity-threshold = 25
+too-many-lines-threshold = 300
+
+# 测试相关配置
+allow-dbg-in-tests = true
+allow-expect-in-tests = true
+allow-panic-in-tests = true
+allow-unwrap-in-tests = true
+allow-print-in-tests = true
+allow-indexing-slicing-in-tests = true
+allow-useless-vec-in-tests = true
+
+# 禁止的配置
+disallowed-methods = ["unwrap", "expect", "panic", "unimplemented", "todo"]
+disallowed-types = ["std::process::exit"]
+
+# 其他配置
+msrv = "1.70.0"
+max-trait-bounds = 3
+max-fn-params-bools = 3
+max-struct-bools = 3
+
+# 代码质量配置
+avoid-breaking-exported-api = true
+check-private-items = true
+check-inconsistent-struct-field-initializers = true
+check-incompatible-msrv-in-tests = true
+missing-docs-in-crate-items = true
+missing-docs-allow-unused = true
+missing-panics-doc = true
+missing-errors-doc = true
+missing-safety-doc = true
+
+# 性能相关配置
+arithmetic-side-effects-allowed = false
+arithmetic-side-effects-allowed-binary = false
+arithmetic-side-effects-allowed-unary = false
+verbose-bit-mask-threshold = 8
+
+# 代码风格配置
+doc-valid-idents = true
+enum-variant-name-threshold = 30
+struct-field-name-threshold = 30
+single-char-binding-names-threshold = 2
+min-ident-chars-threshold = 2
+
+# 允许的警告
+allow = [
+    "clippy::missing_safety_doc",
+    "clippy::missing_errors_doc",
+    "clippy::missing_panics_doc",
+    "clippy::module_name_repetitions",
+    "clippy::too_many_arguments",
+    "clippy::type_complexity",
+    "clippy::too_many_lines",
+]
+
+# 禁止的警告
+deny = [
+    "clippy::unwrap_used",
+    "clippy::expect_used",
+    "clippy::panic",
+    "clippy::unimplemented",
+    "clippy::todo",
+]
+
+# 警告级别
+warn = [
+    "clippy::pedantic",
+    "clippy::nursery",
+    "clippy::cargo",
+] 

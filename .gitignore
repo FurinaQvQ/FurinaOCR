@@ -1,0 +1,49 @@
+# Rust 编译输出
+target/
+**/*.rs.bk
+Cargo.lock
+
+# IDE 和编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 临时文件和日志
+captures/
+dumps/
+tmp/
+*.log
+*.tmp
+*.temp
+
+# 数据文件
+data/
+*.json
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.svg
+
+# 系统文件
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# 其他
+.env
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+*.keystore
+
+# AI 模型文件（需要单独下载的大文件）
+genshin/src/scanner/artifact_scanner/models/model_training.onnx
+genshin/src/scanner/artifact_scanner/models/index_2_word.json
