@@ -205,8 +205,7 @@ cd FurinaOCR
 rustup toolchain install nightly
 rustup default nightly
 
-# 3. 获取模型文件（见下方说明）
-# ...放置模型文件到指定位置...
+# 3. 模型文件已包含在仓库中，无需额外下载
 
 # 4. 编译项目
 cargo build --release
@@ -215,36 +214,19 @@ cargo build --release
 ./target/release/FurinaOCR.exe
 ```
 
-### 📦 编译所需文件
+### 📦 编译说明
 
-> ⚠️ **重要提醒**：编译前必须获取AI模型文件！
+✅ **模型文件已包含**：所有必要的AI模型文件已经包含在仓库中！
 
-编译FurinaOCR需要以下模型文件，这些文件必须放置在指定位置：
+仓库中包含以下模型文件：
 
 ```
 genshin/src/scanner/artifact_scanner/models/
-├── model_training.onnx      # SVTR OCR识别模型（~50MB）
-└── index_2_word.json        # 字符索引映射文件（~2KB）
+├── model_training.onnx      # SVTR OCR识别模型（4.6MB）
+└── index_2_word.json        # 字符索引映射文件（11KB）
 ```
 
-**当前状态**：仓库中只包含占位符文件，真实模型文件需要单独获取。
-
-### 📥 获取模型文件的方法
-
-#### 方法一：从GitHub Releases下载（推荐）
-1. 访问本项目的 [Releases页面](../../releases)
-2. 下载 `models.zip` 文件
-3. 解压并将文件放置到正确路径：
-   ```
-   genshin/src/scanner/artifact_scanner/models/
-   ├── model_training.onnx
-   └── index_2_word.json
-   ```
-
-#### 方法二：从训练项目获取
-1. 访问 [FurinaOCR-Training](https://github.com/FurinaQvQ/FurinaOCR-Training) 项目
-2. 按照该项目的训练指南进行模型训练
-3. 将训练生成的文件复制到正确位置
+模型文件使用Git LFS管理，克隆仓库时会自动下载。
 
 ### 🏗️ 项目架构
 
@@ -290,11 +272,11 @@ cargo test --release
 
 ### ⚠️ 重要说明
 
-- **编译时嵌入**：模型文件在编译时通过`include_bytes!`宏嵌入到二进制文件中
-- **路径要求**：路径必须完全匹配，否则编译会失败
-- **文件完整性**：确保模型文件完整且未损坏
+- **模型文件**：AI模型文件使用Git LFS管理，在编译时通过`include_bytes!`宏嵌入到二进制文件中
+- **Git LFS**：首次克隆仓库需要确保Git LFS正常工作，模型文件会自动下载
 - **工具链要求**：必须使用nightly工具链，因为项目使用了coroutines特性
 - **Windows限制**：只能在Windows上编译和运行
+- **文件完整性**：如果编译失败，请检查模型文件是否完整下载
 
 ## 🤝 贡献指南
 
