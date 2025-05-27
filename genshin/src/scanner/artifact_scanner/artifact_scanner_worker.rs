@@ -317,7 +317,9 @@ impl ArtifactScannerWorker {
                 };
 
                 // 使用优化版本的锁定状态检测
-                if let Some(v) = item.list_image.as_ref() { locks = [locks, self.get_page_locks_optimized(v)].concat() };
+                if let Some(v) = item.list_image.as_ref() {
+                    locks = [locks, self.get_page_locks_optimized(v)].concat()
+                };
 
                 artifact_index += 1;
                 let result = match self.scan_item_image_optimized(

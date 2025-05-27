@@ -29,10 +29,7 @@ impl fmt::Display for ArtifactScanError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ArtifactScanError::OcrRecognitionFailed { field, raw_text, error_msg } => {
-                write!(
-                    f,
-                    "OCR识别失败 - 字段: {field}, 原始文本: '{raw_text}', 错误: {error_msg}"
-                )
+                write!(f, "OCR识别失败 - 字段: {field}, 原始文本: '{raw_text}', 错误: {error_msg}")
             },
             ArtifactScanError::ImageCaptureFailed { region, error_msg } => {
                 write!(f, "图像捕获失败 - 区域: {region}, 错误: {error_msg}")
@@ -50,10 +47,7 @@ impl fmt::Display for ArtifactScanError {
                 )
             },
             ArtifactScanError::StarRecognitionFailed { detected_color, confidence } => {
-                write!(
-                    f,
-                    "星级识别失败 - 检测到颜色: {detected_color}, 置信度: {confidence:.2}"
-                )
+                write!(f, "星级识别失败 - 检测到颜色: {detected_color}, 置信度: {confidence:.2}")
             },
             ArtifactScanError::LevelParsingFailed { raw_text, error_msg } => {
                 write!(f, "等级解析失败 - 原始文本: '{raw_text}', 错误: {error_msg}")

@@ -149,9 +149,7 @@ impl GenshinRepositoryScanController {
                 item_count % object.borrow().col
             };
 
-            info!(
-                "扫描任务共 {item_count} 个物品，共计 {total_row} 行，尾行 {last_row_col} 个"
-            );
+            info!("扫描任务共 {item_count} 个物品，共计 {total_row} 行，尾行 {last_row_col} 个");
 
             object.borrow_mut().move_to(0, 0);
 

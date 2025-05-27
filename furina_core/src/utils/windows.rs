@@ -6,10 +6,10 @@ use std::os::windows::ffi::{OsStrExt, OsStringExt};
 use std::pin::{pin, Pin};
 use std::ptr::{null, null_mut, slice_from_raw_parts_mut};
 use std::sync::atomic::{AtomicPtr, Ordering};
-use once_cell::sync::Lazy;
 
 use anyhow::{anyhow, Result};
 use log::{info, warn};
+use once_cell::sync::Lazy;
 use windows_sys::Win32::Foundation::*;
 use windows_sys::Win32::Graphics::Gdi::ClientToScreen;
 use windows_sys::Win32::Security::*;

@@ -18,7 +18,7 @@ impl ScreenshotsCapturer {
 impl Capturer<RgbaImage> for ScreenshotsCapturer {
     fn capture_rect(&self, rect: Rect<i32>) -> Result<RgbaImage> {
         let screen = &self.screens[0];
-        
+
         screen.capture_area(rect.left, rect.top, rect.width as u32, rect.height as u32)
     }
 }

@@ -33,10 +33,7 @@ impl WindowInfoRepository {
         platform: Platform,
         value: WindowInfoType,
     ) {
-        self.data
-            .entry(String::from(name))
-            .or_default()
-            .insert((size, ui, platform), value);
+        self.data.entry(String::from(name)).or_default().insert((size, ui, platform), value);
     }
 
     pub fn add_pos(

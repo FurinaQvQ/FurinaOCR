@@ -40,11 +40,7 @@ unsafe fn unsafe_capture(rect: Rect<i32>) -> Result<Vec<u8>> {
         bmWidth: 0,
         bmType: 0,
     };
-    GetObjectW(
-        hbm,
-        size_of::<BITMAP>() as i32,
-        (&mut bitmap) as *mut BITMAP as *mut c_void,
-    );
+    GetObjectW(hbm, size_of::<BITMAP>() as i32, (&mut bitmap) as *mut BITMAP as *mut c_void);
 
     let mut bi: BITMAPINFOHEADER = BITMAPINFOHEADER {
         biSize: size_of::<BITMAPINFOHEADER>() as u32,

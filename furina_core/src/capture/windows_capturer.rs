@@ -28,7 +28,6 @@ impl Capturer<RgbImage> for WindowsCapturer {
         }
 
         {
-            
             self.fallback_capturer.capture_rect(rect)
         }
     }
