@@ -31,48 +31,44 @@ impl fmt::Display for ArtifactScanError {
             ArtifactScanError::OcrRecognitionFailed { field, raw_text, error_msg } => {
                 write!(
                     f,
-                    "OCR识别失败 - 字段: {}, 原始文本: '{}', 错误: {}",
-                    field, raw_text, error_msg
+                    "OCR识别失败 - 字段: {field}, 原始文本: '{raw_text}', 错误: {error_msg}"
                 )
             },
             ArtifactScanError::ImageCaptureFailed { region, error_msg } => {
-                write!(f, "图像捕获失败 - 区域: {}, 错误: {}", region, error_msg)
+                write!(f, "图像捕获失败 - 区域: {region}, 错误: {error_msg}")
             },
             ArtifactScanError::ArtifactParsingFailed { field, value, expected_format } => {
                 write!(
                     f,
-                    "圣遗物数据解析失败 - 字段: {}, 值: '{}', 期望格式: {}",
-                    field, value, expected_format
+                    "圣遗物数据解析失败 - 字段: {field}, 值: '{value}', 期望格式: {expected_format}"
                 )
             },
             ArtifactScanError::ConsecutiveDuplicateItems { count, threshold } => {
                 write!(
                     f,
-                    "检测到连续重复物品 - 数量: {}, 阈值: {} (可能为翻页错误或非背包顶部开始扫描)",
-                    count, threshold
+                    "检测到连续重复物品 - 数量: {count}, 阈值: {threshold} (可能为翻页错误或非背包顶部开始扫描)"
                 )
             },
             ArtifactScanError::StarRecognitionFailed { detected_color, confidence } => {
                 write!(
                     f,
-                    "星级识别失败 - 检测到颜色: {}, 置信度: {:.2}",
-                    detected_color, confidence
+                    "星级识别失败 - 检测到颜色: {detected_color}, 置信度: {confidence:.2}"
                 )
             },
             ArtifactScanError::LevelParsingFailed { raw_text, error_msg } => {
-                write!(f, "等级解析失败 - 原始文本: '{}', 错误: {}", raw_text, error_msg)
+                write!(f, "等级解析失败 - 原始文本: '{raw_text}', 错误: {error_msg}")
             },
             ArtifactScanError::ModelLoadFailed { model_path, error_msg } => {
-                write!(f, "模型加载失败 - 路径: {}, 错误: {}", model_path, error_msg)
+                write!(f, "模型加载失败 - 路径: {model_path}, 错误: {error_msg}")
             },
             ArtifactScanError::WindowInfoFailed { error_msg } => {
-                write!(f, "窗口信息获取失败 - 错误: {}", error_msg)
+                write!(f, "窗口信息获取失败 - 错误: {error_msg}")
             },
             ArtifactScanError::ScanInterrupted { reason, scanned_count } => {
-                write!(f, "扫描中断 - 原因: {}, 已扫描数量: {}", reason, scanned_count)
+                write!(f, "扫描中断 - 原因: {reason}, 已扫描数量: {scanned_count}")
             },
             ArtifactScanError::Unknown { error_msg } => {
-                write!(f, "未知错误 - {}", error_msg)
+                write!(f, "未知错误 - {error_msg}")
             },
         }
     }
@@ -153,13 +149,13 @@ impl ErrorStatistics {
 pub fn get_error_suggestion(error: &ArtifactScanError) -> String {
     match error {
         ArtifactScanError::OcrRecognitionFailed { field, .. } => {
-            format!("建议: 检查游戏界面是否清晰，确保{}区域没有被遮挡", field)
+            format!("建议: 检查游戏界面是否清晰，确保{field}区域没有被遮挡")
         },
         ArtifactScanError::ImageCaptureFailed { region, .. } => {
-            format!("建议: 检查游戏窗口是否正常显示，{}区域是否可见", region)
+            format!("建议: 检查游戏窗口是否正常显示，{region}区域是否可见")
         },
         ArtifactScanError::ArtifactParsingFailed { field, .. } => {
-            format!("建议: 检查{}的显示格式是否正常，可能需要切换游戏语言为简体中文", field)
+            format!("建议: 检查{field}的显示格式是否正常，可能需要切换游戏语言为简体中文")
         },
         ArtifactScanError::ConsecutiveDuplicateItems { .. } => {
             "建议: 请确保从背包顶部开始扫描，避免在扫描过程中手动翻页".to_string()

@@ -10,7 +10,7 @@ use image::{ImageBuffer, Luma, RgbImage};
 /// - 图像处理缓存
 /// - 批量处理优化
 /// - 内存池管理
-
+///
 /// 创建新的OCR模型实例（线程安全版本）
 pub fn create_ocr_model() -> Result<Box<dyn ImageToText<RgbImage> + Send>> {
     let model: Box<dyn ImageToText<RgbImage> + Send> = Box::new(

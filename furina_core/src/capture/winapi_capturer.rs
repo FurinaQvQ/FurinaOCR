@@ -23,7 +23,7 @@ unsafe fn unsafe_capture(rect: Rect<i32>) -> Result<Vec<u8>> {
         return Err(anyhow!("CreateCompatibleBitmap failed"));
     }
 
-    SelectObject(dc_mem, hbm as *mut c_void);
+    SelectObject(dc_mem, hbm);
 
     let result =
         BitBlt(dc_mem, 0, 0, rect.width, rect.height, dc_window, rect.left, rect.top, SRCCOPY);
@@ -32,7 +32,7 @@ unsafe fn unsafe_capture(rect: Rect<i32>) -> Result<Vec<u8>> {
     }
 
     let mut bitmap: BITMAP = BITMAP {
-        bmBits: 0 as *mut c_void,
+        bmBits: std::ptr::null_mut::<c_void>(),
         bmBitsPixel: 0,
         bmPlanes: 0,
         bmWidthBytes: 0,
@@ -41,7 +41,7 @@ unsafe fn unsafe_capture(rect: Rect<i32>) -> Result<Vec<u8>> {
         bmType: 0,
     };
     GetObjectW(
-        hbm as *mut c_void,
+        hbm,
         size_of::<BITMAP>() as i32,
         (&mut bitmap) as *mut BITMAP as *mut c_void,
     );
@@ -74,14 +74,20 @@ unsafe fn unsafe_capture(rect: Rect<i32>) -> Result<Vec<u8>> {
         DIB_RGB_COLORS,
     );
 
-    DeleteObject(hbm as *mut c_void);
-    DeleteObject(dc_mem as *mut c_void);
+    DeleteObject(hbm);
+    DeleteObject(dc_mem);
     ReleaseDC(null_mut(), dc_window);
 
     Ok(buffer)
 }
 
 pub struct WinapiCapturer;
+
+impl Default for WinapiCapturer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl WinapiCapturer {
     pub fn new() -> Self {
@@ -100,7 +106,7 @@ impl Capturer<RgbImage> for WinapiCapturer {
 
         let img = ImageBuffer::from_fn(rect.width as u32, rect.height as u32, move |x, y| {
             let y = height - y - 1;
-            let b = raw[((y * width + x) * 4 + 0) as usize];
+            let b = raw[((y * width + x) * 4) as usize];
             let g = raw[((y * width + x) * 4 + 1) as usize];
             let r = raw[((y * width + x) * 4 + 2) as usize];
             image::Rgb([r, g, b])

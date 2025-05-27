@@ -77,7 +77,7 @@ impl OcrModel {
         let now = SystemTime::now();
 
         #[cfg(feature = "ort")]
-        let tensor_data: Vec<f32> = (0..1 * 1 * 32 * 384)
+        let tensor_data: Vec<f32> = (0..32 * 384)
             .map(|idx| {
                 let x = idx % 384;
                 let y = (idx / 384) % 32;

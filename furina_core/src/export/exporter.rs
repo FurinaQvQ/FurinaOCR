@@ -10,6 +10,12 @@ pub struct ExportAssets {
     pub assets: Vec<ExportItem>,
 }
 
+impl Default for ExportAssets {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ExportAssets {
     pub fn new() -> Self {
         ExportAssets { assets: Vec::new() }
@@ -38,13 +44,10 @@ impl ExportAssets {
                 Ok(file) => file,
             };
 
-            match file.write_all(&item.contents) {
-                Err(why) => {
-                    stat.failed_items.push(StatisticItem::from_export_item(item));
-                    error!("无法写入文件 {:?}: {}", &item.filename, why);
-                    continue;
-                },
-                Ok(_) => (),
+            if let Err(why) = file.write_all(&item.contents) {
+                stat.failed_items.push(StatisticItem::from_export_item(item));
+                error!("无法写入文件 {:?}: {}", &item.filename, why);
+                continue;
             }
 
             stat.exported_assets.push(StatisticItem::from_export_item(item));

@@ -199,17 +199,14 @@ impl ArtifactStat {
         }
 
         let is_percentage = temp[1].contains('%');
-        let stat_name = match ArtifactStatName::from_zh_cn(temp[0], is_percentage) {
-            Some(v) => v,
-            None => return None,
-        };
+        let stat_name = ArtifactStatName::from_zh_cn(temp[0], is_percentage)?;
 
         // 移除百分号和逗号，然后解析数值
         let re = Regex::new("[%,]").unwrap();
         let mut value = match re.replace_all(temp[1], "").parse::<f64>() {
             Ok(v) => v,
             Err(_) => {
-                error!("stat `{}` parse error", s);
+                error!("stat `{s}` parse error");
                 return None;
             },
         };

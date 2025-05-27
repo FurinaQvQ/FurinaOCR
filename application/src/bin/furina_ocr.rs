@@ -34,7 +34,7 @@ pub fn main() {
             press_any_key_to_continue();
         },
         Err(e) => {
-            log::error!("程序执行出错: {}", e);
+            log::error!("程序执行出错: {e}");
             press_any_key_to_continue();
         },
     }

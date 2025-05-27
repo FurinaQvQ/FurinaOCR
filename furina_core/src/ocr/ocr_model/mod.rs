@@ -1,3 +1,4 @@
+#[allow(clippy::module_inception)]
 pub mod ocr_model;
 pub mod preprocess;
 

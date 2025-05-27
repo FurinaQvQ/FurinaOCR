@@ -57,7 +57,7 @@ impl GenshinArtifactScanner {
                         model_path: "./models/model_training.onnx".to_string(),
                         error_msg: e.to_string(),
                     };
-                    error!("模型加载失败: {}", error);
+                    error!("模型加载失败: {error}");
                     error!("建议: {}", get_error_suggestion(&error));
                     anyhow::anyhow!(error)
                 },
@@ -72,7 +72,7 @@ impl GenshinArtifactScanner {
                 region: "屏幕捕获初始化".to_string(),
                 error_msg: e.to_string(),
             };
-            error!("图像捕获器初始化失败: {}", error);
+            error!("图像捕获器初始化失败: {error}");
             error!("建议: {}", get_error_suggestion(&error));
             anyhow::anyhow!(error)
         })?))
@@ -92,7 +92,7 @@ impl GenshinArtifactScanner {
         )
         .map_err(|e| {
             let error = ArtifactScanError::WindowInfoFailed { error_msg: e.to_string() };
-            error!("窗口信息获取失败: {}", error);
+            error!("窗口信息获取失败: {error}");
             error!("建议: {}", get_error_suggestion(&error));
             anyhow::anyhow!(error)
         })?;
@@ -125,7 +125,7 @@ impl GenshinArtifactScanner {
         )
         .map_err(|e| {
             let error = ArtifactScanError::WindowInfoFailed { error_msg: e.to_string() };
-            error!("窗口信息获取失败: {}", error);
+            error!("窗口信息获取失败: {error}");
             error!("建议: {}", get_error_suggestion(&error));
             anyhow::anyhow!(error)
         })?;
@@ -158,7 +158,7 @@ impl GenshinArtifactScanner {
                     region: "圣遗物面板".to_string(),
                     error_msg: e.to_string(),
                 };
-                warn!("图像捕获失败: {}", error);
+                warn!("图像捕获失败: {error}");
                 warn!("建议: {}", get_error_suggestion(&error));
                 anyhow::anyhow!(error)
             })
@@ -174,7 +174,7 @@ impl GenshinArtifactScanner {
                 region: "星级颜色采样".to_string(),
                 error_msg: e.to_string(),
             };
-            warn!("星级颜色采样失败: {}", error);
+            warn!("星级颜色采样失败: {error}");
             warn!("建议: {}", get_error_suggestion(&error));
             anyhow::anyhow!(error)
         })?;
@@ -204,7 +204,7 @@ impl GenshinArtifactScanner {
                 detected_color: format!("RGB({}, {}, {})", color.0[0], color.0[1], color.0[2]),
                 confidence: 1.0 - (min_dis as f64 / 50000.0).min(1.0),
             };
-            warn!("星级识别置信度较低: {}", error);
+            warn!("星级识别置信度较低: {error}");
             warn!("建议: {}", get_error_suggestion(&error));
         }
 
@@ -231,7 +231,7 @@ impl GenshinArtifactScanner {
                     region: "物品数量区域".to_string(),
                     error_msg: e.to_string(),
                 };
-                warn!("物品数量区域捕获失败: {}", error);
+                warn!("物品数量区域捕获失败: {error}");
                 warn!("建议: {}", get_error_suggestion(&error));
                 anyhow::anyhow!(error)
             })?;
@@ -242,12 +242,12 @@ impl GenshinArtifactScanner {
                 raw_text: "".to_string(),
                 error_msg: e.to_string(),
             };
-            warn!("物品数量识别失败: {}", error);
+            warn!("物品数量识别失败: {error}");
             warn!("建议: {}", get_error_suggestion(&error));
             anyhow::anyhow!(error)
         })?;
 
-        info!("物品信息: {}", s);
+        info!("物品信息: {s}");
 
         if s.starts_with(item_name) {
             let chars = s.chars().collect::<Vec<char>>();
@@ -257,16 +257,16 @@ impl GenshinArtifactScanner {
                 Ok(match count_str.parse::<usize>() {
                     Ok(v) => (v as i32).min(max_count),
                     Err(e) => {
-                        warn!("物品数量解析失败: '{}', 错误: {}, 使用默认最大值", count_str, e);
+                        warn!("物品数量解析失败: '{count_str}', 错误: {e}, 使用默认最大值");
                         max_count
                     },
                 })
             } else {
-                warn!("物品信息格式异常: '{}', 使用默认最大值", s);
+                warn!("物品信息格式异常: '{s}', 使用默认最大值");
                 Ok(max_count)
             }
         } else {
-            warn!("未识别到圣遗物信息: '{}', 使用默认最大值", s);
+            warn!("未识别到圣遗物信息: '{s}', 使用默认最大值");
             Ok(max_count)
         }
     }
@@ -278,7 +278,7 @@ impl GenshinArtifactScanner {
         let (tx, rx) = mpsc::channel::<Option<SendItem>>();
 
         let count = self.get_item_count().unwrap_or_else(|e| {
-            error!("获取物品数量失败: {}, 使用默认值", e);
+            error!("获取物品数量失败: {e}, 使用默认值");
             Self::MAX_COUNT as i32
         });
 
@@ -310,10 +310,10 @@ impl GenshinArtifactScanner {
                     filtered_results.iter().filter(|r| !r.is_reliable(0.8)).count();
 
                 if error_count > 0 {
-                    warn!("扫描完成，但有 {} 个圣遗物存在识别错误", error_count);
+                    warn!("扫描完成，但有 {error_count} 个圣遗物存在识别错误");
                 }
                 if low_confidence_count > 0 {
-                    warn!("扫描完成，但有 {} 个圣遗物置信度较低（<80%）", low_confidence_count);
+                    warn!("扫描完成，但有 {low_confidence_count} 个圣遗物置信度较低（<80%）");
                 }
 
                 info!("最终结果: 成功识别 {} 个圣遗物", filtered_results.len());
@@ -325,7 +325,7 @@ impl GenshinArtifactScanner {
                     reason: "识别线程异常退出".to_string(),
                     scanned_count: 0,
                 };
-                error!("扫描失败: {}", error);
+                error!("扫描失败: {error}");
                 error!("建议: {}", get_error_suggestion(&error));
                 Err(anyhow::anyhow!(error))
             },
@@ -337,7 +337,7 @@ impl GenshinArtifactScanner {
         let row = self.window_info.row;
 
         let page_size = col * row;
-        return cur_index % page_size == 0;
+        cur_index % page_size == 0
     }
 
     /// Get the starting row in the page where `cur_index` is in
@@ -349,12 +349,12 @@ impl GenshinArtifactScanner {
 
         let page_size = col * row;
         if max_count - cur_index >= page_size {
-            return 0;
+            0
         } else {
             let remain = max_count - cur_index;
             let remain_row = (remain + col - 1) / col;
             let scroll_row = remain_row.min(row);
-            return row - scroll_row;
+            row - scroll_row
         }
     }
 
@@ -403,7 +403,7 @@ impl GenshinArtifactScanner {
                         None
                     };
 
-                    artifact_index = artifact_index + 1;
+                    artifact_index += 1;
 
                     // todo normalize types
                     if (star as i32) < self.scanner_config.min_star {
@@ -422,7 +422,7 @@ impl GenshinArtifactScanner {
                 },
                 CoroutineState::Complete(result) => {
                     match result {
-                        Err(e) => error!("扫描发生错误：{}", e),
+                        Err(e) => error!("扫描发生错误：{e}"),
                         Ok(value) => match value {
                             GenshinRepositoryControllerReturnResult::Interrupted => {
                                 info!("用户中断")

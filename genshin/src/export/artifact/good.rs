@@ -7,7 +7,6 @@ use crate::artifact::{
 
 /// GOOD格式圣遗物导出模块
 /// 用于将圣遗物数据转换为GOOD格式的JSON输出，支持与其他原神工具的数据交换
-
 /// GOOD格式圣遗物包装结构体
 ///
 /// 包装原始的 GenshinArtifact 结构体，提供GOOD格式的序列化实现。

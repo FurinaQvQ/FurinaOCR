@@ -73,14 +73,14 @@ impl TryInto<Size<f64>> for WindowInfoType {
 
 impl Scalable for WindowInfoType {
     fn scale(&self, factor: f64) -> Self {
-        let result = match *self {
+        
+        match *self {
             WindowInfoType::Rect(rect) => WindowInfoType::Rect(rect.scale(factor)),
             WindowInfoType::Pos(pos) => WindowInfoType::Pos(pos.scale(factor)),
             WindowInfoType::Size(size) => WindowInfoType::Size(size.scale(factor)),
             WindowInfoType::Float(v) => WindowInfoType::Float(v.scale(factor)),
             WindowInfoType::InvariantInt(v) => WindowInfoType::InvariantInt(v),
             WindowInfoType::InvariantFloat(v) => WindowInfoType::InvariantFloat(v),
-        };
-        result
+        }
     }
 }

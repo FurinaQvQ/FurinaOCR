@@ -14,6 +14,12 @@ pub struct WindowInfoRepository {
     pub data: HashMap<String, HashMap<(Size<usize>, UI, Platform), WindowInfoType>>,
 }
 
+impl Default for WindowInfoRepository {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl WindowInfoRepository {
     pub fn new() -> WindowInfoRepository {
         WindowInfoRepository { data: HashMap::new() }
@@ -29,7 +35,7 @@ impl WindowInfoRepository {
     ) {
         self.data
             .entry(String::from(name))
-            .or_insert(HashMap::new())
+            .or_default()
             .insert((size, ui, platform), value);
     }
 
@@ -43,7 +49,7 @@ impl WindowInfoRepository {
     ) {
         self.data
             .entry(String::from(name))
-            .or_insert(HashMap::new())
+            .or_default()
             .insert((size, ui, platform), WindowInfoType::Pos(value));
     }
 
@@ -51,7 +57,7 @@ impl WindowInfoRepository {
         for (key, data) in other.data.iter() {
             if self.data.contains_key(key) {
                 for (resolution, value) in data.iter() {
-                    self.data.get_mut(key).unwrap().insert(resolution.clone(), value.clone());
+                    self.data.get_mut(key).unwrap().insert(*resolution, *value);
                 }
             } else {
                 self.data.insert(key.clone(), data.clone());

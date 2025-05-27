@@ -79,7 +79,7 @@ fn main() {
     println!("  导出格式: {}", args.format);
 
     if let Some(output_dir) = &args.output_dir {
-        println!("  导出目录: {}", output_dir);
+        println!("  导出目录: {output_dir}");
     }
 
     if args.debug {

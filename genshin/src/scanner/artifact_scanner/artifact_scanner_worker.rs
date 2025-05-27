@@ -193,7 +193,7 @@ impl ArtifactScannerWorker {
         let str_equip = match &ocr_results[4] {
             Ok(text) => text.clone(),
             Err(e) => {
-                warn!("装备状态识别失败，使用默认值: {}", e);
+                warn!("装备状态识别失败，使用默认值: {e}");
                 String::new()
             },
         };
@@ -317,10 +317,7 @@ impl ArtifactScannerWorker {
                 };
 
                 // 使用优化版本的锁定状态检测
-                match item.list_image.as_ref() {
-                    Some(v) => locks = vec![locks, self.get_page_locks_optimized(v)].concat(),
-                    None => {},
-                };
+                if let Some(v) = item.list_image.as_ref() { locks = [locks, self.get_page_locks_optimized(v)].concat() };
 
                 artifact_index += 1;
                 let result = match self.scan_item_image_optimized(
@@ -334,7 +331,7 @@ impl ArtifactScannerWorker {
                     Err(e) => {
                         let scan_error = ArtifactScanError::Unknown { error_msg: e.to_string() };
                         self.error_stats.record_error(&scan_error);
-                        error!("识别错误: {}", e);
+                        error!("识别错误: {e}");
                         error!("建议: {}", get_error_suggestion(&scan_error));
                         continue;
                     },
@@ -342,11 +339,11 @@ impl ArtifactScannerWorker {
 
                 // 记录结果中的错误
                 for error_msg in &result.scan_errors {
-                    warn!("扫描警告: {}", error_msg);
+                    warn!("扫描警告: {error_msg}");
                 }
 
                 if is_verbose {
-                    info!("{:?}", result);
+                    info!("{result:?}");
                     if result.has_errors() {
                         warn!(
                             "该圣遗物识别存在 {} 个错误，置信度: {:.2}",
@@ -371,7 +368,7 @@ impl ArtifactScannerWorker {
                         threshold: info.col as usize,
                     };
                     self.error_stats.record_error(&dup_error);
-                    warn!("识别到重复物品: {:#?}", result);
+                    warn!("识别到重复物品: {result:#?}");
                     warn!("{}", get_error_suggestion(&dup_error));
                 } else {
                     consecutive_dup_count = 0;
@@ -403,10 +400,10 @@ impl ArtifactScannerWorker {
                 let items_with_errors = results.iter().filter(|r| r.has_errors()).count();
                 warn!("扫描过程中发现问题，详细统计如下:");
                 for line in self.error_stats.get_error_summary().lines() {
-                    warn!("{}", line);
+                    warn!("{line}");
                 }
                 if items_with_errors > 0 {
-                    warn!("- 存在错误的物品: {} 个", items_with_errors);
+                    warn!("- 存在错误的物品: {items_with_errors} 个");
                 }
 
                 if self.error_stats.get_success_rate() < 80.0 {

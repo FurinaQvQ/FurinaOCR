@@ -39,13 +39,13 @@ fn get_window(window_names: &[&str]) -> Result<(HWND, bool)> {
 
     if viable_handles.len() == 1 {
         return Ok((viable_handles[0].0, is_window_cloud(&viable_handles[0].1)));
-    } else if viable_handles.len() == 0 {
+    } else if viable_handles.is_empty() {
         return Err(anyhow!("未找到游戏窗口，请确认{:?}已经开启", window_names));
     }
 
     println!("找到多个符合名称的窗口，请手动选择窗口：");
     for (i, (_hwnd, title)) in viable_handles.iter().enumerate() {
-        println!("{}: {}", i, title);
+        println!("{i}: {title}");
     }
     let mut index = String::new();
     let _ = stdin().read_line(&mut index);

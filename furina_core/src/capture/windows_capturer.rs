@@ -28,8 +28,8 @@ impl Capturer<RgbImage> for WindowsCapturer {
         }
 
         {
-            let result = self.fallback_capturer.capture_rect(rect);
-            return result;
+            
+            self.fallback_capturer.capture_rect(rect)
         }
     }
 }

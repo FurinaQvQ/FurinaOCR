@@ -6,7 +6,7 @@ use std::os::windows::ffi::{OsStrExt, OsStringExt};
 use std::pin::{pin, Pin};
 use std::ptr::{null, null_mut, slice_from_raw_parts_mut};
 use std::sync::atomic::{AtomicPtr, Ordering};
-use std::sync::LazyLock;
+use once_cell::sync::Lazy;
 
 use anyhow::{anyhow, Result};
 use log::{info, warn};
@@ -21,7 +21,7 @@ use windows_sys::Win32::UI::WindowsAndMessaging::*;
 use crate::positioning::Rect;
 
 pub fn encode_lpcstr(s: &str) -> Vec<u8> {
-    let mut arr: Vec<u8> = s.bytes().map(|x| x as u8).collect();
+    let mut arr: Vec<u8> = s.bytes().collect();
     arr.push(0);
     arr
 }
@@ -128,7 +128,7 @@ pub fn set_dpi_awareness() {
         let utf16 = encode_lpcstr("Shcore.dll");
         LoadLibraryA(utf16.as_ptr())
     };
-    println!("{:?}", h_lib);
+    println!("{h_lib:?}");
     if h_lib.is_null() {
         unsafe {
             SetProcessDPIAware();
@@ -136,17 +136,16 @@ pub fn set_dpi_awareness() {
     } else {
         unsafe {
             let addr = GetProcAddress(h_lib, encode_lpcstr("SetProcessDpiAwareness").as_ptr());
-            println!("{:?}", addr);
-            if addr.is_none() {
-                warn!("cannot find process `SetProcessDpiAwareness`, but `Shcore.dll` exists");
-                SetProcessDPIAware();
-            } else {
-                let proc = addr.unwrap();
+            println!("{addr:?}");
+            if let Some(proc) = addr {
                 let func = transmute::<
                     unsafe extern "system" fn() -> isize,
                     unsafe extern "system" fn(usize) -> isize,
                 >(proc);
                 func(2);
+            } else {
+                warn!("cannot find process `SetProcessDpiAwareness`, but `Shcore.dll` exists");
+                SetProcessDPIAware();
             }
 
             FreeLibrary(h_lib);
@@ -163,8 +162,8 @@ pub fn show_window_and_set_foreground(hwnd: HWND) {
 }
 
 unsafe fn iterate_window_unsafe() -> Vec<HWND> {
-    static ALL_HANDLES: LazyLock<AtomicPtr<Vec<HWND>>> =
-        LazyLock::new(|| AtomicPtr::new(Box::into_raw(Box::new(Vec::new()))));
+    static ALL_HANDLES: Lazy<AtomicPtr<Vec<HWND>>> =
+        Lazy::new(|| AtomicPtr::new(Box::into_raw(Box::new(Vec::new()))));
 
     extern "system" fn callback(hwnd: HWND, _vec_ptr: LPARAM) -> BOOL {
         unsafe {
@@ -192,7 +191,7 @@ unsafe fn get_window_title_unsafe(hwnd: HWND) -> Option<String> {
 
     let s = OsString::from_wide(&buffer);
 
-    if let Some(ss) = s.into_string().ok() {
+    if let Ok(ss) = s.into_string() {
         let ss = ss.trim_matches(char::from(0));
         Some(String::from(ss))
     } else {

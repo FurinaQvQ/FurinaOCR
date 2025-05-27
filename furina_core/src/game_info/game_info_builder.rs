@@ -7,6 +7,12 @@ pub struct GameInfoBuilder {
     pub cloud_window_names: Vec<String>,
 }
 
+impl Default for GameInfoBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GameInfoBuilder {
     pub fn new() -> Self {
         GameInfoBuilder { local_window_names: Vec::new(), cloud_window_names: Vec::new() }

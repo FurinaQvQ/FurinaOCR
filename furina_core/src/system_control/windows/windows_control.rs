@@ -4,6 +4,12 @@ pub struct WindowsSystemControl {
     enigo: Enigo,
 }
 
+impl Default for WindowsSystemControl {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl WindowsSystemControl {
     pub fn new() -> WindowsSystemControl {
         WindowsSystemControl { enigo: Enigo::new() }

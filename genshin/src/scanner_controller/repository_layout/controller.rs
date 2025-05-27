@@ -150,8 +150,7 @@ impl GenshinRepositoryScanController {
             };
 
             info!(
-                "扫描任务共 {} 个物品，共计 {} 行，尾行 {} 个",
-                item_count, total_row, last_row_col
+                "扫描任务共 {item_count} 个物品，共计 {total_row} 行，尾行 {last_row_col} 个"
             );
 
             object.borrow_mut().move_to(0, 0);
@@ -345,7 +344,7 @@ impl GenshinRepositoryScanController {
                 ScrollResult::Success | ScrollResult::Skip => continue,
                 ScrollResult::Interrupt => return ScrollResult::Interrupt,
                 v => {
-                    error!("Scrolling failed: {:?}", v);
+                    error!("Scrolling failed: {v:?}");
                     return v;
                 },
             }

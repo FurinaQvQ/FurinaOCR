@@ -1,3 +1,4 @@
+#[allow(clippy::module_inception)]
 mod game_info;
 mod game_info_builder;
 mod os;

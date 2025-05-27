@@ -31,7 +31,13 @@ impl ExportStatistics {
 impl fmt::Display for ExportStatistics {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let table = self.get_table();
-        write!(f, "{}", table)
+        write!(f, "{table}")
+    }
+}
+
+impl Default for ExportStatistics {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

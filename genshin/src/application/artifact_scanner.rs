@@ -62,9 +62,9 @@ impl ArtifactScannerApplication {
         let window_info_repository = Self::get_window_info_repository();
         let game_info = Self::get_game_info().map_err(|e| {
             let error = ArtifactScanError::WindowInfoFailed {
-                error_msg: format!("游戏窗口检测失败: {}", e),
+                error_msg: format!("游戏窗口检测失败: {e}"),
             };
-            error!("游戏窗口检测失败: {}", error);
+            error!("游戏窗口检测失败: {error}");
             error!("建议: {}", get_error_suggestion(&error));
             anyhow::anyhow!(error)
         })?;
@@ -81,7 +81,7 @@ impl ArtifactScannerApplication {
                 let error = ArtifactScanError::Unknown {
                     error_msg: "需要管理员权限运行程序".to_string(),
                 };
-                error!("权限检查失败: {}", error);
+                error!("权限检查失败: {error}");
                 error!("建议: 请右键点击程序，选择\"以管理员身份运行\"");
                 return Err(anyhow::anyhow!(error));
             }
@@ -93,7 +93,7 @@ impl ArtifactScannerApplication {
             game_info.clone(),
         )
         .map_err(|e| {
-            error!("扫描器初始化失败: {}", e);
+            error!("扫描器初始化失败: {e}");
             if e.to_string().contains("模型加载失败") {
                 error!("可能的解决方案:");
                 error!("1. 检查程序目录下是否存在 models 文件夹");
@@ -107,7 +107,7 @@ impl ArtifactScannerApplication {
         let scan_start_time = std::time::Instant::now();
 
         let result = scanner.scan().map_err(|e| {
-            error!("扫描过程发生错误: {}", e);
+            error!("扫描过程发生错误: {e}");
             if e.to_string().contains("图像捕获失败") {
                 error!("图像捕获相关问题的解决方案:");
                 error!("1. 确保原神游戏窗口完全可见且未被遮挡");
@@ -125,7 +125,7 @@ impl ArtifactScannerApplication {
         })?;
 
         let scan_duration = scan_start_time.elapsed();
-        info!("扫描完成，耗时: {:?}", scan_duration);
+        info!("扫描完成，耗时: {scan_duration:?}");
 
         // 详细的扫描结果分析
         let total_scanned = result.len();
@@ -134,16 +134,16 @@ impl ArtifactScannerApplication {
         let high_quality_items = result.iter().filter(|r| r.star >= 4).count();
 
         info!("扫描结果统计:");
-        info!("- 总计扫描: {} 个圣遗物", total_scanned);
-        info!("- 高品质物品(4星及以上): {} 个", high_quality_items);
+        info!("- 总计扫描: {total_scanned} 个圣遗物");
+        info!("- 高品质物品(4星及以上): {high_quality_items} 个");
 
         if error_items > 0 {
-            warn!("- 存在识别错误: {} 个", error_items);
+            warn!("- 存在识别错误: {error_items} 个");
             warn!("  这些物品的数据可能不准确，建议手动检查");
         }
 
         if low_confidence_items > 0 {
-            warn!("- 置信度较低: {} 个", low_confidence_items);
+            warn!("- 置信度较低: {low_confidence_items} 个");
             warn!("  这些物品的识别可能存在问题");
         }
 
@@ -162,7 +162,7 @@ impl ArtifactScannerApplication {
                         item.confidence_score
                     );
                     for error in &item.scan_errors {
-                        warn!("    错误: {}", error);
+                        warn!("    错误: {error}");
                     }
                 }
             }
@@ -193,7 +193,7 @@ impl ArtifactScannerApplication {
                     let main_stat_raw =
                         format!("{}+{}", scan_result.main_stat_name, scan_result.main_stat_value);
                     if crate::artifact::ArtifactStat::from_zh_cn_raw(&main_stat_raw).is_none() {
-                        failure_reasons.push(format!("主属性解析失败: '{}'", main_stat_raw));
+                        failure_reasons.push(format!("主属性解析失败: '{main_stat_raw}'"));
                     }
 
                     // 检查是否为明显的OCR识别错误
@@ -211,7 +211,7 @@ impl ArtifactScannerApplication {
 
         let conversion_errors = conversion_failed_items.len();
         if conversion_errors > 0 {
-            warn!("数据转换过程中丢失了 {} 个物品", conversion_errors);
+            warn!("数据转换过程中丢失了 {conversion_errors} 个物品");
             warn!("这通常是由于识别错误导致的数据格式问题");
 
             // 显示转换失败的物品详情（限制显示数量避免日志过长）
@@ -227,7 +227,7 @@ impl ArtifactScannerApplication {
                     }
                     warn!("    转换失败原因:");
                     for reason in reasons {
-                        warn!("      - {}", reason);
+                        warn!("      - {reason}");
                     }
 
                     // 为OCR识别错误提供特殊建议
@@ -246,13 +246,13 @@ impl ArtifactScannerApplication {
                     warn!("      - 装备状态: {}", item.equip);
                 }
             } else {
-                warn!("转换失败的物品过多({})，建议检查扫描质量", conversion_errors);
+                warn!("转换失败的物品过多({conversion_errors})，建议检查扫描质量");
             }
         }
 
         // 导出结果
         let exporter = GenshinArtifactExporter::new(arg_matches, &artifacts).map_err(|e| {
-            error!("导出器初始化失败: {}", e);
+            error!("导出器初始化失败: {e}");
             error!("可能的解决方案:");
             error!("1. 检查导出目录是否存在且有写入权限");
             error!("2. 检查磁盘空间是否充足");
@@ -264,17 +264,17 @@ impl ArtifactScannerApplication {
 
         let stats = export_assets.save();
         info!("导出结果：");
-        let table = format!("{}", stats);
+        let table = format!("{stats}");
         // print multiline
         for line in table.lines() {
-            info!("{}", line);
+            info!("{line}");
         }
 
         // 最终总结
         info!("=== 扫描完成总结 ===");
-        info!("✅ 成功识别 {} 件圣遗物", total_scanned);
+        info!("✅ 成功识别 {total_scanned} 件圣遗物");
         info!("✅ 成功导出 {} 件圣遗物", artifacts.len());
-        info!("⏱️  总耗时: {:?}", scan_duration);
+        info!("⏱️  总耗时: {scan_duration:?}");
 
         // 综合判断是否有任何问题
         let has_any_issues = error_items > 0 || low_confidence_items > 0 || conversion_errors > 0;
@@ -283,13 +283,13 @@ impl ArtifactScannerApplication {
             info!("🎉 扫描过程完美，未发现任何错误！");
         } else {
             if error_items > 0 {
-                warn!("⚠️  {} 个物品存在识别错误", error_items);
+                warn!("⚠️  {error_items} 个物品存在识别错误");
             }
             if low_confidence_items > 0 {
-                warn!("⚠️  {} 个物品置信度较低", low_confidence_items);
+                warn!("⚠️  {low_confidence_items} 个物品置信度较低");
             }
             if conversion_errors > 0 {
-                warn!("⚠️  {} 个物品在数据转换时丢失", conversion_errors);
+                warn!("⚠️  {conversion_errors} 个物品在数据转换时丢失");
             }
             warn!("💡 建议检查游戏设置和环境，以提高识别准确率");
         }
