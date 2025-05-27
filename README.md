@@ -24,13 +24,13 @@ rustup default nightly
 rustup component add rustfmt clippy
 ```
 
-2. 克隆仓库：
+2. 克隆仓库（确保使用--recursive参数）：
 ```powershell
-git clone https://github.com/FurinaQvQ/FurinaOCR.git
+git clone --recursive https://github.com/FurinaQvQ/FurinaOCR.git
 cd FurinaOCR
 ```
 
-3. 编译项目：
+3. 安装项目依赖：
 ```powershell
 cargo build --release
 ```
@@ -39,6 +39,12 @@ cargo build --release
 ```powershell
 .\target\release\furina_ocr.exe
 ```
+
+如果遇到编译错误，请确保：
+1. 已正确安装Rust nightly工具链
+2. 使用`--recursive`参数克隆仓库
+3. 所有子模块都已正确克隆
+4. 项目目录结构完整
 
 ## 使用说明
 
