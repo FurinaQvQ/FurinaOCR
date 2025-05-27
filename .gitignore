@@ -21,7 +21,7 @@ tmp/
 
 # 数据文件
 data/
-*.json
+# 忽略所有图片文件
 *.png
 *.jpg
 *.jpeg
@@ -45,3 +45,4 @@ $RECYCLE.BIN/
 *.keystore
 
 # AI 模型文件已包含在仓库中
+# 注意：index_2_word.json 和 model_training.onnx 应该被包含在仓库中
