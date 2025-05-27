@@ -395,6 +395,7 @@ fn equip_from_zh_cn(equip: Option<&str>) -> &'static str {
 ///     Ok(())
 /// }
 /// ```
+#[derive(Serialize)]
 pub struct GOODFormat<'a> {
     format: &'a str,                  // 格式标识
     version: u32,                     // 版本号
