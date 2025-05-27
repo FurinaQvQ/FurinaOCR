@@ -11,7 +11,7 @@
 </p>
 
 <div align="center">
-  <h3>🎮 原神圣遗物识别神器 | 🚀 极速 · 高精度 · 多格式导出</h3>
+  <h3>🎮 原神圣遗物识别器 | 🚀 极速 · 高精度 · 多格式导出</h3>
   <p>让你的圣遗物管理更轻松，数据更专业！</p>
 </div>
 
@@ -88,38 +88,38 @@ cargo build --release
 
 ##### GOOD格式导出
 ```powershell
-FurinaOCR.exe export --format good
+.\FurinaOCR.exe export --format good
 ```
 
 ##### Mona格式导出（默认）
 ```powershell
-FurinaOCR.exe export --format mona
+.\FurinaOCR.exe export --format mona
 ```
 
 ##### 原魔计算器格式导出
 ```powershell
-FurinaOCR.exe export --format mingyu 
+.\FurinaOCR.exe export --format mingyu 
 ```
 
 ##### CSV格式导出
 ```powershell
-FurinaOCR.exe export --format csv 
+.\FurinaOCR.exe export --format csv 
 ```
 
 #### 🔧 常用命令
 
 ```powershell
 # 查看帮助
-FurinaOCR.exe --help
+.\FurinaOCR.exe --help
 
 # 查看版本
-FurinaOCR.exe --version
+.\FurinaOCR.exe --version
 
 # 批量处理
-FurinaOCR.exe batch --input ./screenshots
+.\FurinaOCR.exe batch --input ./screenshots
 
 # 查看配置
-FurinaOCR.exe config show
+.\FurinaOCR.exe config show
 ```
 
 ## 🛠️ 开发环境设置
