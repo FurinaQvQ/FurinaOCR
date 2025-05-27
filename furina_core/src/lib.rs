@@ -1,8 +1,5 @@
 #![allow(unused_imports)]
 
-#[cfg(all(feature = "ort", feature = "tract_onnx"))]
-compile_error!("feature \"ort\" and \"tract_onnx\" cannot be enabled at the same time");
-
 extern crate lazy_static;
 extern crate log;
 

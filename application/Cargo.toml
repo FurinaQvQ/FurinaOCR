@@ -1,13 +1,11 @@
 [package]
-name = "furina-application"
+name = "FurinaOCR"
 version = "0.1.0"
 edition = "2021"
 authors = ["FurinaQvQ"]
 description = "专注于原神圣遗物扫描的高效工具"
 
-[[bin]]
-name = "FurinaOCR"
-path = "src/main.rs"
+
 
 [dependencies]
 furina_core = { path = "../furina_core" }

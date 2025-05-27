@@ -3,24 +3,16 @@ use std::time::{Duration, SystemTime};
 
 use anyhow::Result;
 use image::{EncodableLayout, GrayImage, ImageBuffer, Luma, RgbImage};
-#[cfg(feature = "ort")]
-use ort::{session::builder::GraphOptimizationLevel, session::Session, value::Value};
-#[cfg(feature = "tract_onnx")]
-use tract_onnx::prelude::*;
+use ort::session::builder::GraphOptimizationLevel;
+use ort::session::Session;
+use ort::value::Value;
 
 use super::preprocess;
 use crate::common::image_ext::*;
-// use tract_onnx::prelude::*;
 use crate::ocr::traits::ImageToText;
 
-#[cfg(feature = "tract_onnx")]
-type ModelType = RunnableModel<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>;
-
 pub struct OcrModel {
-    #[cfg(feature = "ort")]
     model: Session,
-    #[cfg(feature = "tract_onnx")]
-    model: ModelType,
     index_to_word: Vec<String>,
 
     inference_time: RefCell<Duration>, // in seconds
@@ -39,18 +31,11 @@ impl OcrModel {
         }
     }
 
-    pub fn new(model: &[u8], content: &str) -> Result<OcrModel> {
-        #[cfg(feature = "ort")]
+    pub fn new(model_bytes: &[u8], content: &str) -> Result<OcrModel> {
         let model = Session::builder()?
             .with_optimization_level(GraphOptimizationLevel::Level3)?
             .with_intra_threads(4)?
-            .commit_from_memory(model)?;
-        #[cfg(feature = "tract_onnx")]
-        let model = tract_onnx::onnx()
-            .model_for_read(&mut model.as_bytes())?
-            .with_input_fact(0, f32::fact([1, 1, 32, 384]).into())?
-            .into_optimized()?
-            .into_runnable()?;
+            .commit_from_memory(model_bytes)?;
 
         let json = serde_json::from_str::<serde_json::Value>(content)?;
 
@@ -76,7 +61,6 @@ impl OcrModel {
     pub fn inference_string(&self, img: &ImageBuffer<Luma<f32>, Vec<f32>>) -> Result<String> {
         let now = SystemTime::now();
 
-        #[cfg(feature = "ort")]
         let tensor_data: Vec<f32> = (0..32 * 384)
             .map(|idx| {
                 let x = idx % 384;
@@ -84,25 +68,12 @@ impl OcrModel {
                 img.get_pixel(x as u32, y as u32)[0]
             })
             .collect();
-        #[cfg(feature = "ort")]
+
         let result = self
             .model
             .run(ort::inputs!["input" => Value::from_array(([1, 1, 32, 384], tensor_data))?]?)?;
-        #[cfg(feature = "tract_onnx")]
-        let tensor: Tensor =
-            tract_ndarray::Array4::from_shape_fn((1, 1, 32, 384), |(_, _, y, x)| {
-                img.get_pixel(x as u32, y as u32)[0]
-            })
-            .into();
 
-        #[cfg(feature = "tract_onnx")]
-        let result = self.model.run(tvec!(tensor.into()))?;
-
-        #[cfg(feature = "ort")]
         let arr = result[0].try_extract_tensor()?;
-        #[cfg(feature = "tract_onnx")]
-        let arr = result[0].to_array_view::<f32>()?;
-
         let shape = arr.shape();
 
         let mut ans = String::new();
