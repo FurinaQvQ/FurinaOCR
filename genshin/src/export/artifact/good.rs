@@ -375,16 +375,26 @@ fn equip_from_zh_cn(equip: Option<&str>) -> &'static str {
     }
 }
 
-/// GOOD格式根结构体
+/// GOOD格式导出结构体
 ///
-/// 表示完整的GOOD格式导出文件结构，包含格式信息和圣遗物数据。
+/// 用于将圣遗物数据转换为GOOD格式的JSON输出。
+/// 包含格式标识、版本号、数据来源和圣遗物列表。
 ///
-/// # 字段说明
-/// - `format`: 格式标识符，固定为"GOOD"
-/// - `version`: GOOD格式版本号
-/// - `source`: 数据来源标识，标记为"furina"
-/// - `artifacts`: 圣遗物数组
-#[derive(Serialize)]
+/// # 示例
+///
+/// ```rust
+/// use crate::export::artifact::good::GOODFormat;
+/// use crate::artifact::GenshinArtifact;
+/// use anyhow::Result;
+///
+/// fn main() -> Result<()> {
+///     let artifacts = vec![/* 圣遗物数据 */];
+///     let good_format = GOODFormat::new(&artifacts);
+///     let json = serde_json::to_string_pretty(&good_format)?;
+///     println!("{}", json);
+///     Ok(())
+/// }
+/// ```
 pub struct GOODFormat<'a> {
     format: &'a str,                  // 格式标识
     version: u32,                     // 版本号
@@ -402,10 +412,18 @@ impl<'a> GOODFormat<'a> {
     /// 返回包含所有圣遗物数据的GOOD格式结构体
     ///
     /// # 示例
-    /// ```
-    /// let artifacts = vec![/* 圣遗物数据 */];
-    /// let good_format = GOODFormat::new(&artifacts);
-    /// let json = serde_json::to_string_pretty(&good_format)?;
+    /// ```rust
+    /// use crate::export::artifact::good::GOODFormat;
+    /// use crate::artifact::GenshinArtifact;
+    /// use anyhow::Result;
+    ///
+    /// fn main() -> Result<()> {
+    ///     let artifacts = vec![/* 圣遗物数据 */];
+    ///     let good_format = GOODFormat::new(&artifacts);
+    ///     let json = serde_json::to_string_pretty(&good_format)?;
+    ///     println!("{}", json);
+    ///     Ok(())
+    /// }
     /// ```
     pub fn new(results: &'a [GenshinArtifact]) -> GOODFormat<'a> {
         let artifacts: Vec<GOODArtifact<'a>> =
