@@ -6,6 +6,6 @@ mod config;
 mod csv;
 mod export_format;
 mod exporter;
-mod good;
+pub mod good;
 mod mingyu_lab;
 mod mona_uranai;
