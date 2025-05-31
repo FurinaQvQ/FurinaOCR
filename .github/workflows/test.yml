@@ -15,8 +15,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # 主要在Windows上测试，因为项目主要针对Windows平台
-        os: [windows-latest, ubuntu-latest]
+        # 专注于Windows平台测试
+        os: [windows-latest]
         rust: [nightly]
 
     steps:
@@ -91,7 +91,7 @@ jobs:
 
   coverage:
     name: Code Coverage
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -117,7 +117,7 @@ jobs:
 
   test-summary:
     name: Test Summary
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v4

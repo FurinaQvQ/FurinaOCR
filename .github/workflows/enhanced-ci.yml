@@ -33,7 +33,7 @@ jobs:
   # 预检查 - 快速失败
   pre-check:
     name: 🔍 预检查
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     timeout-minutes: 10
     outputs:
       should_run_tests: ${{ steps.changes.outputs.should_run }}
@@ -63,8 +63,8 @@ jobs:
       - name: 获取版本信息
         id: version
         run: |
-          VERSION=$(grep '^version' Cargo.toml | head -1 | cut -d'"' -f2)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          $VERSION = (Select-String -Path "Cargo.toml" -Pattern '^version = "(.+)"').Matches[0].Groups[1].Value
+          echo "version=$VERSION" >> $env:GITHUB_OUTPUT
           echo "📦 当前版本: $VERSION"
 
   # 代码质量门禁
@@ -78,7 +78,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest]
         rust: [nightly]
     
     steps:
@@ -157,7 +157,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest]
         rust: [nightly]
     
     steps:
@@ -211,7 +211,7 @@ jobs:
           echo "::endgroup::"
       
       - name: 📊 代码覆盖率
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'windows-latest'
         run: |
           echo "::group::代码覆盖率"
           cargo llvm-cov nextest --all-features --lcov --output-path coverage.lcov
@@ -226,7 +226,7 @@ jobs:
           echo "::endgroup::"
       
       - name: 上传覆盖率报告
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'windows-latest'
         uses: codecov/codecov-action@v3
         with:
           files: coverage.lcov
@@ -234,7 +234,7 @@ jobs:
           verbose: true
       
       - name: 🚀 性能基准测试
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'windows-latest'
         run: |
           echo "::group::性能基准测试"
           cargo bench --bench string_optimization_bench
@@ -255,35 +255,6 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             features: windows-capture
-          - os: ubuntu-latest  
-            target: x86_64-unknown-linux-gnu
-            features: linux-compat
-    
-    steps:
-      - name: 检出代码
-        uses: actions/checkout@v4
-      
-      - name: 安装Rust工具链
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          targets: ${{ matrix.target }}
-      
-      - name: 配置Rust缓存
-        uses: Swatinem/rust-cache@v2
-      
-      - name: 🎯 目标平台构建
-        run: |
-          echo "::group::${{ matrix.os }} 平台构建"
-          cargo build --target ${{ matrix.target }} --release
-          echo "✅ ${{ matrix.os }} 构建成功"
-          echo "::endgroup::"
-      
-      - name: 🧪 平台特定测试
-        run: |
-          echo "::group::${{ matrix.os }} 特定测试"
-          cargo test --target ${{ matrix.target }} --features ${{ matrix.features }}
-          echo "✅ ${{ matrix.os }} 测试通过"
-          echo "::endgroup::"
 
   # 集成测试和端到端测试
   integration-tests:
@@ -332,9 +303,6 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             suffix: .exe
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            suffix: ""
     
     steps:
       - name: 检出代码
@@ -372,7 +340,7 @@ jobs:
   # 质量报告生成
   quality-report:
     name: 📊 质量报告
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [comprehensive-tests, integration-tests]
     if: always()
     timeout-minutes: 15
@@ -387,12 +355,15 @@ jobs:
       - name: 安装报告工具
         run: |
           cargo install cargo-audit --quiet
-          cargo install scc --quiet
+          # 安装scc代码统计工具 (Windows版本)
+          Invoke-WebRequest -Uri "https://github.com/boyter/scc/releases/download/v3.3.5/scc_Windows_x86_64.zip" -OutFile "scc.zip"
+          Expand-Archive -Path "scc.zip" -DestinationPath "."
+          Move-Item "scc.exe" "$env:USERPROFILE\.cargo\bin\"
       
       - name: 📊 生成质量报告
         run: |
           echo "# 🎯 FurinaOCR 质量报告" > quality-report.md
-          echo "**构建时间**: $(date)" >> quality-report.md
+          echo "**构建时间**: $(Get-Date)" >> quality-report.md
           echo "**版本**: ${{ needs.pre-check.outputs.version }}" >> quality-report.md
           echo "**提交**: ${{ github.sha }}" >> quality-report.md
           echo "" >> quality-report.md
@@ -402,11 +373,11 @@ jobs:
           echo "" >> quality-report.md
           
           echo "## 🔒 安全状态" >> quality-report.md
-          if cargo audit; then
+          if (cargo audit) {
             echo "✅ 无已知安全漏洞" >> quality-report.md
-          else
+          } else {
             echo "⚠️ 发现安全问题，请查看详细日志" >> quality-report.md
-          fi
+          }
           echo "" >> quality-report.md
           
           echo "## 🧪 测试状态" >> quality-report.md
@@ -415,9 +386,9 @@ jobs:
           echo "" >> quality-report.md
           
           echo "## 📊 代码质量指标" >> quality-report.md
-          echo "- 最低覆盖率要求: ${MIN_COVERAGE}%" >> quality-report.md
-          echo "- 最大警告数: ${MAX_WARNINGS}" >> quality-report.md
-          echo "- 最大复杂度: ${MAX_COMPLEXITY}" >> quality-report.md
+          echo "- 最低覆盖率要求: $env:MIN_COVERAGE%" >> quality-report.md
+          echo "- 最大警告数: $env:MAX_WARNINGS" >> quality-report.md
+          echo "- 最大复杂度: $env:MAX_COMPLEXITY" >> quality-report.md
       
       - name: 📤 上传质量报告
         uses: actions/upload-artifact@v4
@@ -428,7 +399,7 @@ jobs:
   # 自动发布
   auto-release:
     name: 🚀 自动发布
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [build-artifacts]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     timeout-minutes: 15
@@ -450,7 +421,7 @@ jobs:
           VERSION=${{ needs.pre-check.outputs.version }}
           git tag -a "v$VERSION" -m "Release v$VERSION"
           git push origin "v$VERSION"
-          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $env:GITHUB_OUTPUT
       
       - name: 📝 生成发布说明
         run: |
@@ -481,7 +452,7 @@ jobs:
   # 部署到测试环境
   deploy-staging:
     name: 🚧 部署到测试环境
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [build-artifacts]
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     timeout-minutes: 20
@@ -499,7 +470,7 @@ jobs:
   # 通知状态
   notify:
     name: 📬 通知
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [quality-gate, comprehensive-tests, integration-tests]
     if: always()
     
@@ -507,17 +478,17 @@ jobs:
       - name: 📊 计算总体状态
         id: status
         run: |
-          QUALITY=${{ needs.quality-gate.result }}
-          TESTS=${{ needs.comprehensive-tests.result }}
-          INTEGRATION=${{ needs.integration-tests.result }}
+          $QUALITY = "${{ needs.quality-gate.result }}"
+          $TESTS = "${{ needs.comprehensive-tests.result }}"
+          $INTEGRATION = "${{ needs.integration-tests.result }}"
           
-          if [[ "$QUALITY" == "success" && "$TESTS" == "success" && "$INTEGRATION" == "success" ]]; then
-            echo "status=success" >> $GITHUB_OUTPUT
-            echo "message=🎉 所有检查通过！代码质量优秀。" >> $GITHUB_OUTPUT
-          else
-            echo "status=failure" >> $GITHUB_OUTPUT
-            echo "message=❌ 部分检查失败，请查看详细日志。" >> $GITHUB_OUTPUT
-          fi
+          if ($QUALITY -eq "success" -and $TESTS -eq "success" -and $INTEGRATION -eq "success") {
+            echo "status=success" >> $env:GITHUB_OUTPUT
+            echo "message=🎉 所有检查通过！代码质量优秀。" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "status=failure" >> $env:GITHUB_OUTPUT
+            echo "message=❌ 部分检查失败，请查看详细日志。" >> $env:GITHUB_OUTPUT
+          }
       
       - name: 📬 发送通知
         run: |

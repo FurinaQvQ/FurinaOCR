@@ -429,7 +429,7 @@ impl GenshinRepositoryScanController {
     }
 
     pub fn scroll_rows(&mut self, count: i32) -> ScrollResult {
-        if cfg!(not(target_os = "macos")) && self.scrolled_rows >= 5 {
+        if cfg!(windows) && self.scrolled_rows >= 5 {
             let length = self.estimate_scroll_length(count);
 
             for _ in 0..length {
@@ -507,9 +507,6 @@ impl GenshinRepositoryScanController {
     #[inline(always)]
     pub fn mouse_scroll(&mut self, length: i32, try_find: bool) {
         #[cfg(windows)]
-        self.system_control.mouse_scroll(length, try_find).unwrap();
-
-        #[cfg(target_os = "linux")]
         self.system_control.mouse_scroll(length, try_find).unwrap();
 
         #[cfg(target_os = "macos")]

@@ -11,16 +11,9 @@ mod winapi_capturer;
 #[cfg(target_os = "windows")]
 mod windows_capturer;
 
-// Linux平台特定模块
-#[cfg(target_os = "linux")]
-mod libwayshot_capturer;
-
 // 公共导出
 pub use capturer::Capturer;
 pub use generic_capturer::GenericCapturer;
-// Linux平台导出
-#[cfg(target_os = "linux")]
-pub use libwayshot_capturer::LibwayshotCapturer;
 // Windows平台导出
 #[cfg(target_os = "windows")]
 pub use screenshots_capturer::ScreenshotsCapturer;

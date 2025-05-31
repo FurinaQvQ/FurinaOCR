@@ -47,7 +47,7 @@ macro_rules! error_and_quit {
     );
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "macos")]
 pub fn is_rmb_down() -> bool {
     false
 }

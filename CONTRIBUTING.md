@@ -93,13 +93,21 @@
 
 ### 系统要求
 
-- **操作系统**: Windows 10/11 (主要)，macOS, 或 Linux
+- **操作系统**: Windows 10/11 (64位) - 项目专为Windows平台设计
 - **Rust**: nightly 版本 (项目使用了一些 nightly 特性)
 - **Git**: 版本控制
+- **Visual Studio Build Tools**: Windows开发必需的C++构建工具
 
 ### 安装步骤
 
-1. **安装 Rust nightly 工具链**
+1. **安装 Visual Studio Build Tools**
+   ```powershell
+   # 下载并安装 Visual Studio Build Tools
+   # https://visualstudio.microsoft.com/visual-cpp-build-tools/
+   # 确保安装 "C++ build tools" 工作负载
+   ```
+
+2. **安装 Rust nightly 工具链**
    ```powershell
    # 方式一：访问 https://rustup.rs/ 下载安装
    # 方式二：PowerShell 命令安装
@@ -112,19 +120,19 @@
    rustup component add rustfmt clippy
    ```
 
-2. **克隆项目**
+3. **克隆项目**
    ```powershell
    git clone --recursive https://github.com/FurinaQvQ/FurinaOCR.git
    cd FurinaOCR
    ```
 
-3. **构建项目**
+4. **构建项目**
    ```powershell
    cargo build
    cargo build --release
    ```
 
-4. **安装开发工具**
+5. **安装开发工具**
    ```powershell
    # 安装Git预提交钩子
    .\scripts\install-hooks.ps1
@@ -137,7 +145,8 @@
 
 - **IDE**: VS Code + rust-analyzer 插件
 - **Git GUI**: GitHub Desktop 或 SourceTree
-- **终端**: Windows Terminal (Windows) 或 iTerm2 (macOS)
+- **终端**: Windows Terminal
+- **调试器**: VS Code 内置调试器 + CodeLLDB 扩展
 
 ## 🏗️ 项目架构
 

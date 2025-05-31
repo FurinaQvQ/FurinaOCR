@@ -1,4 +1,4 @@
-# FurinaOCR - 现代化原神圣遗物智能扫描工具
+# FurinaOCR - 原神圣遗物扫描工具
 
 <div align="center">
 
@@ -11,78 +11,6 @@
 ╚═╝      ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝
 ```
 
-**现代化的原神圣遗物智能扫描工具**
-
-<!-- ========== 个性化项目铭牌 ========== -->
-<table align="center" border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td align="center" style="border: none;">
-      <img src="https://raw.githubusercontent.com/gilbarbara/logos/master/logos/rust.svg" width="35" height="35" alt="Rust"/>
-    </td>
-    <td align="center" style="border: none; padding: 0 15px;">
-      <div style="background: linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%); border-radius: 15px; padding: 8px 16px; color: white; font-weight: bold; font-size: 14px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
-        ✨ 致敬原神，驱动效率 ✨
-      </div>
-    </td>
-    <td align="center" style="border: none;">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/opencv/opencv-original.svg" width="35" height="35" alt="OpenCV"/>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="3" align="center" style="border: none; padding-top: 8px;">
-      <div style="font-size: 12px; color: #666; letter-spacing: 1px;">
-        🦀 <strong>Rust</strong> × 🤖 <strong>ONNX</strong> × 👁️ <strong>OpenCV</strong> × ⚡ <strong>高性能OCR</strong>
-      </div>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="3" align="center" style="border: none; padding-top: 5px;">
-      <div style="font-size: 11px; font-style: italic; color: #888;">
-        「圣遗物扫描，从未如此优雅」
-      </div>
-    </td>
-  </tr>
-</table>
-
-<!-- ========== 功能亮点展示 ========== -->
-<div style="background: linear-gradient(90deg, rgba(74,144,226,0.1) 0%, rgba(123,104,238,0.1) 100%); border-radius: 10px; padding: 12px; margin: 15px 0; border-left: 4px solid #4A90E2;">
-  <table align="center" border="0" cellspacing="0" cellpadding="0" style="width: 100%;">
-    <tr>
-      <td align="center" style="border: none; width: 25%;">
-        <div style="font-size: 20px;">🎯</div>
-        <div style="font-size: 11px; font-weight: bold; color: #4A90E2;">精准识别</div>
-        <div style="font-size: 10px; color: #666;">99.9%+ 准确率</div>
-      </td>
-      <td align="center" style="border: none; width: 25%;">
-        <div style="font-size: 20px;">⚡</div>
-        <div style="font-size: 11px; font-weight: bold; color: #7B68EE;">极速扫描</div>
-        <div style="font-size: 10px; color: #666;">毫秒级响应</div>
-      </td>
-      <td align="center" style="border: none; width: 25%;">
-        <div style="font-size: 20px;">🔧</div>
-        <div style="font-size: 11px; font-weight: bold; color: #50C878;">智能优化</div>
-        <div style="font-size: 10px; color: #666;">自适应调优</div>
-      </td>
-      <td align="center" style="border: none; width: 25%;">
-        <div style="font-size: 20px;">📊</div>
-        <div style="font-size: 11px; font-weight: bold; color: #FF6B6B;">多端支持</div>
-        <div style="font-size: 10px; color: #666;">全格式导出</div>
-      </td>
-    </tr>
-  </table>
-</div>
-
-<!-- ========== 项目座右铭 ========== -->
-<div align="center" style="margin: 20px 0;">
-  <div style="background: linear-gradient(45deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 16px; font-weight: bold; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
-    「让每一件圣遗物都被完美解读」
-  </div>
-  <div style="font-size: 12px; color: #888; margin-top: 5px; font-style: italic;">
-    ——— FurinaOCR 开发理念 ———
-  </div>
-</div>
-
-<!-- ========== 技术栈与项目信息展示 ========== -->
 <div align="center" style="margin: 15px 0;">
   <!-- 基础信息徽章 -->
   <img src="https://img.shields.io/badge/license-GPL--2.0--or--later-blue.svg" alt="License" style="margin: 2px;"/>
