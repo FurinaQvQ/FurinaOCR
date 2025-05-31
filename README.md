@@ -13,11 +13,6 @@
 
 **现代化的原神圣遗物智能扫描工具**
 
-[![License](https://img.shields.io/badge/license-GPL--2.0--or--later-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org)
-[![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://github.com/FurinaQvQ/FurinaOCR)
-[![Version](https://img.shields.io/badge/version-0.56.1-green.svg)](https://github.com/FurinaQvQ/FurinaOCR/releases)
-
 <!-- ========== 个性化项目铭牌 ========== -->
 <table align="center" border="0" cellspacing="0" cellpadding="0">
   <tr>
@@ -93,14 +88,14 @@
   <img src="https://img.shields.io/badge/license-GPL--2.0--or--later-blue.svg" alt="License" style="margin: 2px;"/>
   <img src="https://img.shields.io/badge/rust-1.70+-orange.svg" alt="Rust Version" style="margin: 2px;"/>
   <img src="https://img.shields.io/badge/platform-Windows-lightgrey.svg" alt="Platform" style="margin: 2px;"/>
-  <img src="https://img.shields.io/badge/version-0.56.1-green.svg" alt="Version" style="margin: 2px;"/>
+  <img src="https://img.shields.io/badge/version-0.56.2-green.svg" alt="Version" style="margin: 2px;"/>
   <br style="margin: 4px 0;"/>
   <!-- CI/CD 流程徽章 -->
   <img src="https://img.shields.io/github/actions/workflow/status/FurinaQvQ/FurinaOCR/enhanced-ci.yml?branch=main&label=🚀%20Enhanced%20CI&logo=github-actions&logoColor=white" alt="Enhanced CI Status" style="margin: 2px;"/>
   <img src="https://img.shields.io/github/actions/workflow/status/FurinaQvQ/FurinaOCR/test.yml?branch=main&label=🧪%20Tests&logo=github-actions&logoColor=white" alt="Tests Status" style="margin: 2px;"/>
   <img src="https://img.shields.io/github/actions/workflow/status/FurinaQvQ/FurinaOCR/ci.yml?branch=main&label=🔧%20Build&logo=github-actions&logoColor=white" alt="Build Status" style="margin: 2px;"/>
-  <img src="https://img.shields.io/codecov/c/github/FurinaQvQ/FurinaOCR?label=📊%20Coverage&logo=codecov&logoColor=white" alt="Code Coverage" style="margin: 2px;"/>
-  <img src="https://img.shields.io/badge/🛡️%20Security-Audit%20Passed-brightgreen?style=flat-square&logo=security&logoColor=white" alt="Security Audit" style="margin: 2px;"/>
+  <img src="https://img.shields.io/badge/🛡️%20Security-Audit-Included-brightgreen?style=flat-square&logo=security&logoColor=white" alt="Security Audit" style="margin: 2px;"/>
+  <img src="https://img.shields.io/badge/📊%20Tests-148-Passed-success?style=flat-square&logo=checkmarx&logoColor=white" alt="Test Results" style="margin: 2px;"/>
   <img src="https://img.shields.io/badge/📋%20Quality%20Gate-✅%20Passed-success?style=flat-square&logo=sonarcloud&logoColor=white" alt="Quality Gate" style="margin: 2px;"/>
   <br style="margin: 4px 0;"/>
   <!-- 技术栈徽章 -->
