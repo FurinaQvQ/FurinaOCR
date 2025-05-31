@@ -255,6 +255,42 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             features: windows-capture
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: 安装Rust工具链
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: ${{ matrix.target }}
+      
+      - name: 配置Rust缓存
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: platform-${{ runner.os }}-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: 🖥️ Windows平台特定测试
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo "::group::Windows平台特定测试"
+          # 测试Windows特定的捕获功能
+          cargo test --package furina_core --features ${{ matrix.features }} capture --verbose
+          # 测试Windows系统控制功能
+          cargo test --package furina_core system_control::windows --verbose
+          # 测试Windows特定的游戏信息获取
+          cargo test --package furina_core game_info --verbose
+          echo "✅ Windows平台特定测试完成"
+          echo "::endgroup::"
+      
+      - name: 🏗️ 平台特定构建测试
+        run: |
+          echo "::group::${{ matrix.target }} 构建测试"
+          cargo build --target ${{ matrix.target }} --features ${{ matrix.features }}
+          echo "✅ ${{ matrix.target }} 构建成功"
+          echo "::endgroup::"
 
   # 集成测试和端到端测试
   integration-tests:
