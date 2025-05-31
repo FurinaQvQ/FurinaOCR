@@ -17,6 +17,9 @@ mod windows;
 pub use windows::*;
 
 mod misc;
+pub mod string_optimizer;
+
+pub use string_optimizer::*;
 
 pub fn sleep(ms: u32) {
     thread::sleep(Duration::from_millis(ms as u64));

@@ -1,11 +1,13 @@
 [package]
 name = "furina_core"
 version.workspace = true
-edition = "2021"
+edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Core library for Genshin Impact artifact scanner"
+description = "Core library for Genshin Impact artifact scanner - based on yas_core"
+keywords.workspace = true
+homepage.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -33,6 +35,7 @@ prettytable-rs = "^0.10"
 bytesize = {version = "1.2.0", features = ["serde"]}
 ort = { version = "2.0.0-rc.2" }
 ndarray = { version = "0.15" }
+tokio = { version = "1.0", features = ["full"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 windows-capture = "1.0.65"
@@ -51,4 +54,8 @@ features = [
 
 [build-dependencies]
 cc = "1.1.7"
+
+[dev-dependencies]
+criterion = { workspace = true }
+serde_json = { workspace = true }
 

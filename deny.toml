@@ -1,0 +1,73 @@
+# Cargo-deny 配置文件
+# 用于依赖许可证检查、安全审计和重复依赖检测
+
+[graph]
+# 如果传递依赖有多个版本，是否拒绝
+all-features = false
+no-default-features = false
+
+[output]
+# 输出格式配置
+feature-depth = 1
+
+[advisories]
+# 安全公告配置
+db-path = "~/.cargo/advisory-db"
+db-urls = ["https://github.com/rustsec/advisory-db"]
+vulnerability = "deny"
+unmaintained = "warn"
+yanked = "warn"
+notice = "warn"
+ignore = [
+    # 可以在这里忽略特定的安全公告
+]
+
+[licenses]
+# 许可证配置
+unlicensed = "deny"
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-DFS-2016",
+    "CC0-1.0",
+    "GPL-2.0-or-later",
+]
+deny = [
+    "AGPL-1.0",
+    "AGPL-3.0",
+]
+copyleft = "warn"
+allow-osi-fsf-free = "neither"
+default = "deny"
+confidence-threshold = 0.8
+
+[licenses.private]
+# 私有依赖配置
+ignore = false
+registries = []
+
+[bans]
+# 禁用特定依赖
+multiple-versions = "warn"
+wildcards = "allow"
+highlight = "all"
+workspace-default-features = "allow"
+external-default-features = "allow"
+allow = []
+deny = [
+    # 可以在这里禁用特定的依赖
+]
+
+skip = []
+skip-tree = []
+
+[sources]
+# 源码来源配置
+unknown-registry = "warn"
+unknown-git = "warn"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = [] 

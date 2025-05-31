@@ -18,6 +18,54 @@ use crate::scanner_controller::repository_layout::{
     GenshinRepositoryScanControllerWindowInfo, GenshinRepositoryScannerLogicConfig, ScrollResult,
 };
 
+/// 扫描状态管理结构体
+///
+/// 用于跟踪扫描过程中的各种状态信息
+#[derive(Debug, Clone)]
+struct ScanState {
+    /// 已扫描的行数
+    scanned_row: usize,
+    /// 已扫描的物品数量  
+    scanned_count: usize,
+    /// 当前页面起始行
+    start_row: usize,
+    /// 物品总数
+    item_count: usize,
+    /// 总行数
+    total_row: usize,
+    /// 最后一行的列数
+    last_row_col: usize,
+}
+
+impl ScanState {
+    /// 创建新的扫描状态
+    fn new(item_count: usize, col: usize) -> Self {
+        let total_row = (item_count + col - 1) / col;
+        let last_row_col = if item_count % col == 0 { col } else { item_count % col };
+
+        Self { scanned_row: 0, scanned_count: 0, start_row: 0, item_count, total_row, last_row_col }
+    }
+
+    /// 检查是否完成扫描
+    fn is_scan_complete(&self) -> bool {
+        self.scanned_count >= self.item_count
+    }
+
+    /// 检查是否到达最大行数
+    fn is_max_row_reached(&self) -> bool {
+        self.scanned_row >= self.total_row
+    }
+
+    /// 计算剩余扫描参数
+    fn calculate_remaining_scan_params(&self, controller_row: usize) -> (usize, usize) {
+        let remain = self.item_count - self.scanned_count;
+        let remain_row = (remain + controller_row - 1) / controller_row;
+        let scroll_row = remain_row.min(controller_row);
+        let start_row = controller_row - scroll_row;
+        (scroll_row, start_row)
+    }
+}
+
 pub struct GenshinRepositoryScanController {
     // to detect whether an item changes
     pool: f64,
@@ -46,20 +94,46 @@ pub struct GenshinRepositoryScanController {
     is_artifact: bool,
 }
 
+/// 计算图像行的像素池值
+///
+/// 该函数计算图像行中所有红色通道值的总和，用于检测界面变化。
+/// 当界面发生变化时，红色通道值的总和会发生变化，从而可以检测到界面切换。
+///
+/// # 参数
+/// * `row` - 图像行的原始字节数据，格式为RGB
+///
+/// # 返回值
+/// 返回红色通道值的总和
 fn calc_pool(row: &[u8]) -> f32 {
-    let len = row.len() / 3;
+    let len = row.len() / 3; // RGB格式，每3个字节表示一个像素
     let mut pool: f32 = 0.0;
 
     for i in 0..len {
-        pool += row[i * 3] as f32;
+        pool += row[i * 3] as f32; // 只累加红色通道值
     }
     pool
 }
 
+/// 获取屏幕捕获器实例
+///
+/// 创建一个通用的屏幕捕获器，用于截图和颜色采样
 fn get_capturer() -> Result<Rc<dyn Capturer<RgbImage>>> {
     Ok(Rc::new(GenericCapturer::new()?))
 }
 
+/// 计算两个颜色之间的欧几里得距离
+///
+/// 使用RGB空间中的欧几里得距离公式计算颜色差异：
+/// distance = sqrt((r1-r2)² + (g1-g2)² + (b1-b2)²)
+///
+/// 为了提高性能，返回距离的平方值（避免开方运算）
+///
+/// # 参数
+/// * `c1` - 第一个颜色
+/// * `c2` - 第二个颜色
+///
+/// # 返回值
+/// 返回距离的平方，值越小表示颜色越相似
 fn color_distance(c1: &image::Rgb<u8>, c2: &image::Rgb<u8>) -> usize {
     let x = c1.0[0] as i32 - c2.0[0] as i32;
     let y = c1.0[1] as i32 - c2.0[1] as i32;
@@ -124,6 +198,53 @@ impl GenshinRepositoryScanController {
             is_artifact,
         )
     }
+
+    /// 初始化扫描环境
+    ///
+    /// 设置初始位置、点击界面并采样初始颜色
+    fn initialize_scan_environment(
+        object: &Rc<RefCell<GenshinRepositoryScanController>>,
+    ) -> Result<()> {
+        // 移动到起始位置
+        object.borrow_mut().move_to(0, 0);
+
+        #[cfg(target_os = "macos")]
+        utils::sleep(20);
+
+        // 点击界面激活
+        object.borrow_mut().system_control.mouse_click()?;
+        utils::sleep(1000);
+
+        // 采样初始颜色用于检测界面变化
+        object.borrow_mut().sample_initial_color()?;
+
+        Ok(())
+    }
+
+    /// 处理页面滚动
+    ///
+    /// 计算滚动参数并执行滚动操作
+    fn handle_page_scroll(
+        object: &Rc<RefCell<GenshinRepositoryScanController>>,
+        state: &mut ScanState,
+    ) -> Result<()> {
+        let controller_row = object.borrow().row;
+        let (scroll_row, new_start_row) = state.calculate_remaining_scan_params(controller_row);
+        state.start_row = new_start_row;
+
+        match object.borrow_mut().scroll_rows(scroll_row as i32) {
+            ScrollResult::TimeLimitExceeded => {
+                return Err(anyhow!("翻页超时，扫描终止……"));
+            },
+            ScrollResult::Interrupt => {
+                return Err(anyhow!("用户中断扫描"));
+            },
+            _ => (),
+        }
+
+        utils::sleep(100);
+        Ok(())
+    }
 }
 
 pub enum ReturnResult {
@@ -138,90 +259,79 @@ impl GenshinRepositoryScanController {
     ) -> impl Coroutine<Yield = (), Return = Result<ReturnResult>> {
         let generator = #[coroutine]
         move || {
-            let mut scanned_row = 0;
-            let mut scanned_count = 0;
-            let mut start_row = 0;
+            // 初始化扫描状态
+            let col = object.borrow().col;
+            let mut state = ScanState::new(item_count, col);
 
-            let total_row = (item_count + object.borrow().col - 1) / object.borrow().col;
-            let last_row_col = if item_count % object.borrow().col == 0 {
-                object.borrow().col
-            } else {
-                item_count % object.borrow().col
-            };
+            info!(
+                "扫描任务: {} 个物品，共 {} 行，尾行 {} 个",
+                state.item_count, state.total_row, state.last_row_col
+            );
 
-            info!("扫描任务共 {item_count} 个物品，共计 {total_row} 行，尾行 {last_row_col} 个");
+            // 初始化扫描环境
+            Self::initialize_scan_environment(&object)?;
 
-            object.borrow_mut().move_to(0, 0);
+            // 主扫描循环
+            'outer: while !state.is_scan_complete() {
+                let controller_row = object.borrow().row.min(state.total_row);
 
-            #[cfg(target_os = "macos")]
-            utils::sleep(20);
-
-            // todo remove unwrap
-            object.borrow_mut().system_control.mouse_click().unwrap();
-            utils::sleep(1000);
-
-            object.borrow_mut().sample_initial_color().unwrap();
-
-            let row = object.borrow().row.min(total_row);
-
-            'outer: while scanned_count < item_count {
-                '_row: for row in start_row..row {
-                    let row_item_count = if scanned_row == total_row - 1 {
-                        last_row_col
+                '_row: for row in state.start_row..controller_row {
+                    // 确定当前行的物品数量
+                    let row_item_count = if state.scanned_row == state.total_row - 1 {
+                        state.last_row_col
                     } else {
                         object.borrow().col
                     };
 
                     '_col: for col in 0..row_item_count {
-                        // 大于最大数量 或者 取消 或者 鼠标右键按下
+                        // 检查扫描完成条件
+                        if state.scanned_count >= state.item_count {
+                            break 'outer;
+                        }
+
+                        // 检查用户中断
                         if utils::is_rmb_down() {
                             return Ok(ReturnResult::Interrupted);
                         }
-                        if scanned_count > item_count {
-                            return Ok(ReturnResult::Finished);
-                        }
 
+                        // 准备扫描：移动和点击
                         object.borrow_mut().move_to(row, col);
-                        object.borrow_mut().system_control.mouse_click().unwrap();
+                        object.borrow_mut().system_control.mouse_click()?;
 
                         #[cfg(target_os = "macos")]
                         utils::sleep(20);
 
-                        let _ = object.borrow_mut().wait_until_switched();
+                        // 等待界面切换
+                        object.borrow_mut().wait_until_switched()?;
 
-                        // have to make sure at this point no mut ref exists
+                        // yield 让出控制权，允许外部处理
                         yield;
 
-                        scanned_count += 1;
-                        object.borrow_mut().scanned_count = scanned_count;
-                    } // end '_col
+                        // 更新扫描计数
+                        state.scanned_count += 1;
+                        object.borrow_mut().scanned_count = state.scanned_count;
+                    }
 
-                    scanned_row += 1;
+                    state.scanned_row += 1;
 
-                    // todo this is dangerous, use uniform integer type instead
-                    if scanned_row >= object.borrow().config.max_row as usize {
-                        info!("到达最大行数，准备退出……");
+                    // 检查是否到达最大行数
+                    if state.is_max_row_reached() {
+                        info!("到达最大行数，准备退出");
                         break 'outer;
                     }
-                } // end '_row
-
-                let remain = item_count - scanned_count;
-                let remain_row = (remain + object.borrow().col - 1) / object.borrow().col;
-                let scroll_row = remain_row.min(object.borrow().row);
-                start_row = object.borrow().row - scroll_row;
-
-                match object.borrow_mut().scroll_rows(scroll_row as i32) {
-                    ScrollResult::TimeLimitExceeded => {
-                        // error!("");
-                        return Err(anyhow!("翻页超时，扫描终止……"));
-                    },
-                    ScrollResult::Interrupt => {
-                        return Ok(ReturnResult::Interrupted);
-                    },
-                    _ => (),
                 }
 
-                utils::sleep(100);
+                // 处理页面滚动（如果还有物品需要扫描）
+                if !state.is_scan_complete() {
+                    if let Err(e) = Self::handle_page_scroll(&object, &mut state) {
+                        return match e.downcast_ref::<String>() {
+                            Some(msg) if msg == "用户中断扫描" => {
+                                Ok(ReturnResult::Interrupted)
+                            },
+                            _ => Err(e),
+                        };
+                    }
+                }
             }
 
             Ok(ReturnResult::Finished)
@@ -299,8 +409,6 @@ impl GenshinRepositoryScanController {
 
             let _ = self.system_control.mouse_scroll(1, false);
 
-            // self.mouse_scroll(1, count < 1);
-
             utils::sleep(self.config.scroll_delay.try_into().unwrap());
             count += 1;
 
@@ -325,11 +433,10 @@ impl GenshinRepositoryScanController {
             let length = self.estimate_scroll_length(count);
 
             for _ in 0..length {
-                // todo remove unwrap
-                self.system_control.mouse_scroll(1, false).unwrap();
+                if self.system_control.mouse_scroll(1, false).is_err() {
+                    return ScrollResult::Failed;
+                }
             }
-
-            // self.mouse_scroll(length, false);
 
             utils::sleep(self.config.scroll_delay.try_into().unwrap());
 
@@ -342,7 +449,7 @@ impl GenshinRepositoryScanController {
                 ScrollResult::Success | ScrollResult::Skip => continue,
                 ScrollResult::Interrupt => return ScrollResult::Interrupt,
                 v => {
-                    error!("Scrolling failed: {v:?}");
+                    error!("滚动失败: {v:?}");
                     return v;
                 },
             }
@@ -428,8 +535,6 @@ impl GenshinRepositoryScanController {
         let current = self.avg_scroll_one_row * self.scrolled_rows as f64 + count as f64;
         self.scrolled_rows += 1;
         self.avg_scroll_one_row = current / self.scrolled_rows as f64;
-
-        info!("avg scroll one row: {} ({})", self.avg_scroll_one_row, self.scrolled_rows);
     }
 
     #[inline(always)]

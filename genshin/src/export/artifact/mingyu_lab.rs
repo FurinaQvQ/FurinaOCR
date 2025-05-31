@@ -144,10 +144,10 @@ impl ArtifactSetName {
             ArtifactSetName::LongNightsOath => "long_nights_oath",
             ArtifactSetName::FinaleOfTheDeepGalleries => "finale_of_the_deep_galleries",
 
-            // Not supported by Mingyulab
-            ArtifactSetName::Adventurer => unreachable!(),
-            ArtifactSetName::LuckyDog => unreachable!(),
-            ArtifactSetName::TravelingDoctor => unreachable!(),
+            // 不支持的套装，返回默认值而不是panic
+            ArtifactSetName::Adventurer => "adventurer",
+            ArtifactSetName::LuckyDog => "lucky_dog",
+            ArtifactSetName::TravelingDoctor => "traveling_doctor",
         }
     }
 }
@@ -158,15 +158,8 @@ pub struct MingyuLabFormat<'a> {
 
 impl<'a> MingyuLabFormat<'a> {
     pub fn new(results: &'a [GenshinArtifact]) -> MingyuLabFormat<'a> {
-        let artifacts: Vec<MingyuLabArtifact<'a>> = results
-            .iter()
-            .filter(|artifact| {
-                artifact.set_name != ArtifactSetName::Adventurer
-                    && artifact.set_name != ArtifactSetName::LuckyDog
-                    && artifact.set_name != ArtifactSetName::TravelingDoctor
-            })
-            .map(|artifact| MingyuLabArtifact { artifact })
-            .collect();
+        let artifacts: Vec<MingyuLabArtifact<'a>> =
+            results.iter().map(|artifact| MingyuLabArtifact { artifact }).collect();
         MingyuLabFormat { artifacts }
     }
 }

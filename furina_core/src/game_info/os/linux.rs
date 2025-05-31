@@ -31,7 +31,7 @@ pub fn get_game_info() -> Result<GameInfo> {
     let height = info.next().unwrap().parse().unwrap();
 
     let rect = Rect::new(left, top, width, height);
-    let rf = ResolutionFamily::new(rect.size()).ok_or(anyhow!("unknown resolution family"))?;
+    let rf = ResolutionFamily::new(rect.width as u32, rect.height as u32)?;
 
     Ok(GameInfo {
         window: rect.to_rect_i32(),

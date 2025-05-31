@@ -1,0 +1,166 @@
+{
+    "current_resolution": {
+        "width": 2560,
+        "height": 1440
+    },
+    "platform": "Windows",
+    "ui": "Desktop",
+    "data": {
+        "genshin_artifact_offset": {
+            "Size": {
+                "width": 0,
+                "height": 77.6
+            }
+        },
+        "genshin_repository_panel_rect": {
+            "Rect": {
+                "top": 160.0,
+                "left": 1744.0,
+                "width": 656.0,
+                "height": 1120.0
+            }
+        },
+        "genshin_repository_flag_pos": {
+            "Pos": {
+                "x": 433.8,
+                "y": 143.7
+            }
+        },
+        "genshin_repository_item_gap_size": {
+            "Size": {
+                "width": 32,
+                "height": 32
+            }
+        },
+        "genshin_repository_item_size": {
+            "Size": {
+                "width": 163,
+                "height": 202
+            }
+        },
+        "genshin_repository_scan_margin_pos": {
+            "Pos": {
+                "x": 158,
+                "y": 162
+            }
+        },
+        "genshin_repository_pool_rect": {
+            "Rect": {
+                "top": 189.1,
+                "left": 1831.5,
+                "width": 24,
+                "height": 627.4
+            }
+        },
+        "genshin_repository_item_row": {
+            "InvariantInt": 5
+        },
+        "genshin_repository_item_col": {
+            "InvariantInt": 8
+        },
+        "genshin_repository_lock_pos": {
+            "Pos": {
+                "x": 19,
+                "y": 22
+            }
+        },
+        "genshin_artifact_item_count_rect": {
+            "Rect": {
+                "top": 43.4,
+                "left": 2103.8,
+                "height": 41.3,
+                "width": 303.7
+            }
+        },
+        "genshin_artifact_star_pos": {
+            "Pos": {
+                "x": 2351.0,
+                "y": 198.2
+            }
+        },
+        "genshin_artifact_lock_pos": {
+            "Pos": {
+                "x": 2320,
+                "y": 571
+            }
+        },
+        "genshin_artifact_main_stat_name_rect": {
+            "Rect": {
+                "top": 358.9,
+                "left": 1776.0,
+                "height": 38.4,
+                "width": 230.2
+            }
+        },
+        "genshin_artifact_main_stat_value_rect": {
+            "Rect": {
+                "top": 397.4,
+                "left": 1776.0,
+                "height": 61.4,
+                "width": 218.9
+            }
+        },
+        "genshin_artifact_level_rect": {
+            "Rect": {
+                "top": 576,
+                "left": 1787,
+                "height": 29,
+                "width": 69
+            }
+        },
+        "genshin_artifact_item_equip_rect": {
+            "Rect": {
+                "top": 1220.2,
+                "left": 1847.8,
+                "height": 40.3,
+                "width": 389.6
+            }
+        },
+        "genshin_artifact_sub_stat1_rect": {
+            "Rect": {
+                "top": 637.0,
+                "left": 1808.3,
+                "height": 46.7,
+                "width": 340.5
+            }
+        },
+        "genshin_artifact_sub_stat2_rect": {
+            "Rect": {
+                "top": 683.7,
+                "left": 1808.3,
+                "height": 47.0,
+                "width": 340.5
+            }
+        },
+        "genshin_artifact_sub_stat3_rect": {
+            "Rect": {
+                "top": 733.1,
+                "left": 1808.3,
+                "height": 52.3,
+                "width": 340.5
+            }
+        },
+        "genshin_artifact_sub_stat4_rect": {
+            "Rect": {
+                "top": 785.4,
+                "left": 1808.3,
+                "height": 51.4,
+                "width": 340.5
+            }
+        },
+        "genshin_artifact_title_rect": {
+            "Rect": {
+                "top": 170.6,
+                "left": 1778.9,
+                "height": 52.8,
+                "width": 489.4
+            }
+        },
+        "genshin_artifact_hoarfrost_offset": {
+            "Size": {
+                "width": 0,
+                "height": 51.0
+            }
+        }
+    }
+} 

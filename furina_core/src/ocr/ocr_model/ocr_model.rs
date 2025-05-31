@@ -8,7 +8,7 @@ use ort::session::Session;
 use ort::value::Value;
 
 use super::preprocess;
-use crate::common::image_ext::*;
+use crate::common::image_ext::ToF32GrayImage;
 use crate::ocr::traits::ImageToText;
 
 pub struct OcrModel {

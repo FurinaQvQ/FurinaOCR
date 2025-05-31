@@ -36,6 +36,29 @@ fn parse_level(s: &str) -> Result<i32> {
     anyhow::Ok(level)
 }
 
+/// 修正祝圣之霜圣遗物OCR识别结果的文本问题
+///
+/// 专门处理1920×1080分辨率下祝圣之霜圣遗物的特殊识别问题：
+/// - "暴击伤" -> "暴击伤害"
+/// - 其他可能的类似问题
+fn fix_hoarfrost_ocr_text(text: &str, is_hoarfrost: bool, window_size: (u32, u32)) -> String {
+    // 仅对1920×1080分辨率的祝圣之霜圣遗物进行修正
+    if !is_hoarfrost || window_size != (1920, 1080) {
+        return text.to_string();
+    }
+
+    // 修正已知的OCR识别问题
+    if text.starts_with("暴击伤+") || text.starts_with("暴击伤 +") {
+        let fixed_text = text.replace("暴击伤", "暴击伤害");
+        info!("🔧 文本修正: {text} -> {fixed_text}");
+        return fixed_text;
+    }
+
+    // 未来可以在这里添加其他类似的修正规则
+
+    text.to_string()
+}
+
 /// 优化版本的扫描工作器，使用优化的OCR识别和性能监控
 pub struct ArtifactScannerWorker {
     ocr_recognizer: OptimizedOCRRecognizer,
@@ -44,12 +67,14 @@ pub struct ArtifactScannerWorker {
     error_stats: ErrorStatistics,
     performance_monitor: PerformanceMonitor,
     adaptive_delay: AdaptiveDelayManager,
+    window_size: (u32, u32), // 窗口的真实尺寸 (width, height)
 }
 
 impl ArtifactScannerWorker {
     pub fn new(
         window_info: ArtifactScannerWindowInfo,
         config: GenshinArtifactScannerConfig,
+        window_size: (u32, u32),
     ) -> Result<Self> {
         Ok(ArtifactScannerWorker {
             ocr_recognizer: OptimizedOCRRecognizer::new()?,
@@ -58,6 +83,7 @@ impl ArtifactScannerWorker {
             error_stats: ErrorStatistics::new(),
             performance_monitor: PerformanceMonitor::new(),
             adaptive_delay: AdaptiveDelayManager::new(10), // 基础延时10ms
+            window_size,
         })
     }
 
@@ -125,12 +151,78 @@ impl ArtifactScannerWorker {
         let image = &item.panel_image;
         let mut result_errors = Vec::new();
 
+        // 检测祝圣之霜圣遗物
+        let is_hoarfrost = self.check_consecration_of_hoarfrost(image);
+        let hoarfrost_offset = if is_hoarfrost {
+            let offset = self.get_hoarfrost_offset();
+            info!("✨ 检测到祝圣之霜圣遗物");
+            offset
+        } else {
+            0.0
+        };
+
+        // 计算调整后的识别区域（如果检测到祝圣之霜则向下偏移）
+        let adjusted_level_rect = if is_hoarfrost {
+            Rect {
+                left: self.window_info.level_rect.left,
+                top: self.window_info.level_rect.top + hoarfrost_offset,
+                width: self.window_info.level_rect.width,
+                height: self.window_info.level_rect.height,
+            }
+        } else {
+            self.window_info.level_rect
+        };
+
+        let adjusted_sub_stat_1 = if is_hoarfrost {
+            Rect {
+                left: self.window_info.sub_stat_1.left,
+                top: self.window_info.sub_stat_1.top + hoarfrost_offset,
+                width: self.window_info.sub_stat_1.width,
+                height: self.window_info.sub_stat_1.height,
+            }
+        } else {
+            self.window_info.sub_stat_1
+        };
+
+        let adjusted_sub_stat_2 = if is_hoarfrost {
+            Rect {
+                left: self.window_info.sub_stat_2.left,
+                top: self.window_info.sub_stat_2.top + hoarfrost_offset,
+                width: self.window_info.sub_stat_2.width,
+                height: self.window_info.sub_stat_2.height,
+            }
+        } else {
+            self.window_info.sub_stat_2
+        };
+
+        let adjusted_sub_stat_3 = if is_hoarfrost {
+            Rect {
+                left: self.window_info.sub_stat_3.left,
+                top: self.window_info.sub_stat_3.top + hoarfrost_offset,
+                width: self.window_info.sub_stat_3.width,
+                height: self.window_info.sub_stat_3.height,
+            }
+        } else {
+            self.window_info.sub_stat_3
+        };
+
+        let adjusted_sub_stat_4 = if is_hoarfrost {
+            Rect {
+                left: self.window_info.sub_stat_4.left,
+                top: self.window_info.sub_stat_4.top + hoarfrost_offset,
+                width: self.window_info.sub_stat_4.width,
+                height: self.window_info.sub_stat_4.height,
+            }
+        } else {
+            self.window_info.sub_stat_4
+        };
+
         // 准备批量OCR识别的区域
         let ocr_regions = vec![
             (self.window_info.title_rect, "圣遗物名称"),
             (self.window_info.main_stat_name_rect, "主属性名称"),
             (self.window_info.main_stat_value_rect, "主属性数值"),
-            (self.window_info.level_rect, "等级"),
+            (adjusted_level_rect, "等级"),
             (self.window_info.item_equip_rect, "装备状态"),
         ];
 
@@ -200,17 +292,26 @@ impl ArtifactScannerWorker {
 
         // 副属性仍使用单独识别（通常文本较短，批量处理收益不大）
         let str_sub_stat0 = self
-            .model_inference_optimized(self.window_info.sub_stat_1, image, "副属性1")
+            .model_inference_optimized(adjusted_sub_stat_1, image, "副属性1")
             .unwrap_or_default();
-        let str_sub_stat1 = self
-            .model_inference_optimized(self.window_info.sub_stat_2, image, "副属性2")
-            .unwrap_or_default();
-        let str_sub_stat2 = self
-            .model_inference_optimized(self.window_info.sub_stat_3, image, "副属性3")
-            .unwrap_or_default();
+        let str_sub_stat0 = fix_hoarfrost_ocr_text(&str_sub_stat0, is_hoarfrost, self.window_size);
+
+        let str_sub_stat1 =
+            match self.model_inference_optimized(adjusted_sub_stat_2, image, "副属性2") {
+                Ok(text) => fix_hoarfrost_ocr_text(&text, is_hoarfrost, self.window_size),
+                Err(_) => String::new(),
+            };
+
+        let str_sub_stat2 =
+            match self.model_inference_optimized(adjusted_sub_stat_3, image, "副属性3") {
+                Ok(text) => fix_hoarfrost_ocr_text(&text, is_hoarfrost, self.window_size),
+                Err(_) => String::new(),
+            };
+
         let str_sub_stat3 = self
-            .model_inference_optimized(self.window_info.sub_stat_4, image, "副属性4")
+            .model_inference_optimized(adjusted_sub_stat_4, image, "副属性4")
             .unwrap_or_default();
+        let str_sub_stat3 = fix_hoarfrost_ocr_text(&str_sub_stat3, is_hoarfrost, self.window_size);
 
         // 解析等级
         let level = match parse_level(&str_level) {
@@ -294,6 +395,64 @@ impl ArtifactScannerWorker {
         result
     }
 
+    /// 检测祝圣之霜圣遗物
+    ///
+    /// 祝圣之霜是5.5版本新增的玩家自定义圣遗物，可以是任何套装和任何部位。
+    /// 该函数通过检测圣遗物等级区域附近特定位置的像素颜色来识别此类圣遗物。
+    ///
+    /// ## 检测原理
+    /// - 检测位置：相对于 `genshin_artifact_level_rect` 的偏移 `(left-10, top-15)`
+    /// - 目标颜色：`#DCC0FF` (RGB: 220, 192, 255) - 祝圣之霜的特征颜色
+    /// - 精确匹配：使用完全相等的颜色检测，不允许任何误差
+    ///
+    /// ## 支持的分辨率
+    /// 该实现支持所有配置的游戏分辨率，通过相对于 `level_rect` 的偏移量自动适配。
+    ///
+    /// ## 返回值
+    /// - `true`: 检测到祝圣之霜圣遗物
+    /// - `false`: 未检测到祝圣之霜圣遗物
+    fn check_consecration_of_hoarfrost(&self, panel_image: &RgbImage) -> bool {
+        // 祝圣之霜检测位置：level_rect区域的(left-10, top-15)的偏移
+        // 在1600x900分辨率下，level_rect的位置是(1117, 360)
+        // 检测位置是(1117-10, 360-15) = (1107, 345)
+
+        // 计算相对于level_rect的偏移
+        let offset_x = -10.0; // left - 10
+        let offset_y = -15.0; // top - 15
+
+        // 计算绝对位置（相对于窗口）
+        let check_x_absolute = self.window_info.level_rect.left + offset_x;
+        let check_y_absolute = self.window_info.level_rect.top + offset_y;
+
+        // 转换为相对于panel_rect的坐标
+        let check_x_relative = check_x_absolute - self.window_info.panel_rect.left;
+        let check_y_relative = check_y_absolute - self.window_info.panel_rect.top;
+
+        // 检查坐标是否在panel_image范围内
+        if check_x_relative >= 0.0
+            && check_y_relative >= 0.0
+            && (check_x_relative as u32) < panel_image.width()
+            && (check_y_relative as u32) < panel_image.height()
+        {
+            let pixel_color =
+                *panel_image.get_pixel(check_x_relative as u32, check_y_relative as u32);
+            let target_color = Rgb([220, 192, 255]); // #DCC0FF
+
+            // 精确颜色匹配
+            if pixel_color == target_color {
+                return true;
+            }
+        }
+        false
+    }
+
+    /// 获取祝圣之霜偏移量
+    /// 从配置文件中读取各分辨率对应的偏移量
+    fn get_hoarfrost_offset(&self) -> f64 {
+        // 从Size类型中取出height作为垂直偏移量
+        self.window_info.hoarfrost_offset.height
+    }
+
     pub fn run(
         mut self,
         rx: Receiver<Option<SendItem>>,
@@ -303,7 +462,6 @@ impl ArtifactScannerWorker {
             let mut hash: HashSet<GenshinArtifactScanResult> = HashSet::new();
             let mut consecutive_dup_count = 0;
 
-            let is_verbose = self.config.verbose;
             let min_level = self.config.min_level;
             let info = self.window_info.clone();
 
@@ -327,12 +485,12 @@ impl ArtifactScannerWorker {
                     locks.get(artifact_index as usize - 1).copied().unwrap_or(false),
                 ) {
                     Ok(v) => {
-                        self.error_stats.record_success();
+                        self.error_stats.add_success();
                         v
                     },
                     Err(e) => {
                         let scan_error = ArtifactScanError::Unknown { error_msg: e.to_string() };
-                        self.error_stats.record_error(&scan_error);
+                        self.error_stats.add_error(&scan_error);
                         error!("识别错误: {e}");
                         error!("建议: {}", get_error_suggestion(&scan_error));
                         continue;
@@ -342,17 +500,6 @@ impl ArtifactScannerWorker {
                 // 记录结果中的错误
                 for error_msg in &result.scan_errors {
                     warn!("扫描警告: {error_msg}");
-                }
-
-                if is_verbose {
-                    info!("{result:?}");
-                    if result.has_errors() {
-                        warn!(
-                            "该圣遗物识别存在 {} 个错误，置信度: {:.2}",
-                            result.error_count(),
-                            result.confidence_score
-                        );
-                    }
                 }
 
                 if result.level < min_level {
@@ -369,9 +516,8 @@ impl ArtifactScannerWorker {
                         count: consecutive_dup_count,
                         threshold: info.col as usize,
                     };
-                    self.error_stats.record_error(&dup_error);
-                    warn!("识别到重复物品: {result:#?}");
-                    warn!("{}", get_error_suggestion(&dup_error));
+                    self.error_stats.add_error(&dup_error);
+                    warn!("检测到重复物品");
                 } else {
                     consecutive_dup_count = 0;
                     hash.insert(result.clone());
@@ -391,11 +537,7 @@ impl ArtifactScannerWorker {
                 }
             }
 
-            // 输出性能统计
-            info!("{}", self.performance_monitor.get_performance_summary());
-            info!("自适应延时最终值: {}ms", self.adaptive_delay.get_current_delay());
-
-            info!("识别结束，非重复物品数量: {}", hash.len());
+            info!("识别结束，共扫描 {} 个圣遗物", hash.len());
 
             // 输出错误统计报告
             if self.error_stats.total_errors > 0 || results.iter().any(|r| r.has_errors()) {

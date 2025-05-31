@@ -4,37 +4,24 @@ use crate::positioning::Size;
 
 #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub enum ResolutionFamily {
-    // PC
-    Windows43x18,
-    Windows7x3,
-    Windows16x9,
-    Windows8x5,
-    Windows4x3,
-    // Mobile
-    MacOS8x5,
+    // 仅支持以下分辨率族
+    Windows16x9, // 2560×1440, 1920×1080, 1600×900
 }
 
 impl ResolutionFamily {
-    pub fn new(size: Size<usize>) -> Option<Self> {
-        // todo get OS at run time
+    pub fn new(width: u32, height: u32) -> Result<ResolutionFamily, anyhow::Error> {
+        match (width, height) {
+            // 支持的3种分辨率
+            (2560, 1440) => Ok(ResolutionFamily::Windows16x9),
+            (1920, 1080) => Ok(ResolutionFamily::Windows16x9),
+            (1600, 900) => Ok(ResolutionFamily::Windows16x9),
 
-        let height = size.height as u32;
-        let width = size.width as u32;
-
-        if height * 43 == width * 18 {
-            Some(ResolutionFamily::Windows43x18)
-        } else if height * 16 == width * 9 {
-            Some(ResolutionFamily::Windows16x9)
-        } else if height * 8 == width * 5 {
-            Some(ResolutionFamily::Windows8x5)
-        } else if height * 4 == width * 3 {
-            Some(ResolutionFamily::Windows4x3)
-        } else if height * 7 == width * 3 {
-            Some(ResolutionFamily::Windows7x3)
-        } else if (height as i32 * 8 - width as i32 * 5).abs() < 20 {
-            Some(ResolutionFamily::MacOS8x5)
-        } else {
-            None
+            // 不支持的分辨率
+            _ => Err(anyhow::anyhow!(
+                "不支持的分辨率: {}×{}\n支持的分辨率:\n- 2560×1440\n- 1920×1080\n- 1600×900",
+                width,
+                height
+            )),
         }
     }
 }

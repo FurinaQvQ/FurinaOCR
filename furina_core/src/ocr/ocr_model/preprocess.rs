@@ -27,7 +27,6 @@ fn normalize(im: &mut ImageBuffer<Luma<f32>, Vec<f32>>, auto_inverse: bool) -> b
     let height = im.height();
 
     if width == 0 || height == 0 {
-        println!("wrong width or height");
         return false;
     }
 

@@ -44,8 +44,6 @@ impl StreamingCapturer {
                     break;
                 }
 
-                // println!("capture image {}", it);
-
                 let image = self.capturer.capture_rect(self.region);
                 if let Ok(im) = image {
                     tx.send(transform(im))?
@@ -58,7 +56,6 @@ impl StreamingCapturer {
         });
 
         let cancel = move || {
-            println!("cancel capture");
             is_cancelled.store(true, atomic::Ordering::Relaxed);
         };
 

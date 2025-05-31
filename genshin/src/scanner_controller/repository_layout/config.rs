@@ -6,10 +6,6 @@ pub struct GenshinRepositoryScannerLogicConfig {
     #[arg(id = "max-row", long = "max-row", help = "最大扫描行数", default_value_t = -1)]
     pub max_row: i32,
 
-    // todo move to another scanner
-    /// Will the scanner capture only?
-    // pub capture_only: bool,
-
     /// The time to wait for scrolling. Consider increasing this value if the scrolling is not correct
     #[arg(
         id = "scroll-delay",
@@ -18,9 +14,6 @@ pub struct GenshinRepositoryScannerLogicConfig {
         default_value_t = 50
     )]
     pub scroll_delay: i32,
-
-    /// Dump the captured image
-    // pub dump_mode: bool,
 
     /// The maximum time to wait for switching to the next item
     #[arg(
@@ -57,10 +50,7 @@ impl Default for GenshinRepositoryScannerLogicConfig {
     fn default() -> Self {
         GenshinRepositoryScannerLogicConfig {
             max_row: -1,
-            // capture_only: false,
             scroll_delay: 50,
-            // number: -1,
-            // dump_mode: false,
             max_wait_switch_item: 600,
             cloud_wait_switch_item: 200,
             fast_mode: false,

@@ -2,7 +2,6 @@ use anyhow::Result;
 use clap::{command, ArgMatches, Args};
 use furina_core::export::{AssetEmitter, ExportAssets};
 use furina_core::game_info::{GameInfo, GameInfoBuilder};
-use furina_core::load_window_info_repo;
 use furina_core::window_info::{WindowInfoRepository, WindowInfoTemplatePerSize};
 use log::{error, info, warn};
 
@@ -31,13 +30,22 @@ impl ArtifactScannerApplication {
     }
 
     fn get_window_info_repository() -> WindowInfoRepository {
-        load_window_info_repo!(
-            "../../window_info/windows1600x900.json",
-            "../../window_info/windows1280x960.json",
-            "../../window_info/windows1440x900.json",
-            "../../window_info/windows2100x900.json",
-            "../../window_info/windows3440x1440.json",
-        )
+        let mut repo = WindowInfoRepository::new();
+
+        // 仅加载支持的3种分辨率配置文件
+        let configs = [
+            include_str!("../../window_info/windows2560x1440.json"),
+            include_str!("../../window_info/windows1920x1080.json"),
+            include_str!("../../window_info/windows1600x900.json"),
+        ];
+
+        for content in &configs {
+            let template: WindowInfoTemplatePerSize =
+                serde_json::from_str(content).expect("配置文件格式错误");
+            template.inject_into_window_info_repo(&mut repo);
+        }
+
+        repo
     }
 
     // fn init() {
@@ -51,8 +59,9 @@ impl ArtifactScannerApplication {
             .add_local_window_name("原神")
             .add_local_window_name("Genshin Impact")
             .add_cloud_window_name("云·原神")
-            .build();
-        game_info
+            .build()?;
+        info!("🎮 游戏信息获取成功");
+        Ok(game_info)
     }
 }
 
@@ -60,6 +69,7 @@ impl ArtifactScannerApplication {
     pub fn run(&self) -> Result<()> {
         let arg_matches = &self.arg_matches;
         let window_info_repository = Self::get_window_info_repository();
+
         let game_info = Self::get_game_info().map_err(|e| {
             let error = ArtifactScanError::WindowInfoFailed {
                 error_msg: format!("游戏窗口检测失败: {e}"),
@@ -69,10 +79,10 @@ impl ArtifactScannerApplication {
             anyhow::anyhow!(error)
         })?;
 
-        info!("window: {:?}", game_info.window);
-        info!("ui: {:?}", game_info.ui);
-        info!("cloud: {}", game_info.is_cloud);
-        info!("resolution family: {:?}", game_info.resolution_family);
+        info!("游戏窗口: {}x{}", game_info.window.width, game_info.window.height);
+        info!("游戏界面: {:?}", game_info.ui);
+        info!("云游戏: {}", if game_info.is_cloud { "是" } else { "否" });
+        info!("分辨率族: {:?}", game_info.resolution_family);
 
         #[cfg(target_os = "windows")]
         {
@@ -87,6 +97,7 @@ impl ArtifactScannerApplication {
             }
         }
 
+        info!("🔧 开始初始化扫描器...");
         let mut scanner = GenshinArtifactScanner::from_arg_matches(
             &window_info_repository,
             arg_matches,
@@ -103,7 +114,7 @@ impl ArtifactScannerApplication {
             e
         })?;
 
-        info!("开始扫描圣遗物...");
+        info!("✅ 扫描器初始化成功！开始扫描圣遗物...");
         let scan_start_time = std::time::Instant::now();
 
         let result = scanner.scan().map_err(|e| {

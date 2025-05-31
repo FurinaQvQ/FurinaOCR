@@ -64,4 +64,8 @@ pub struct ArtifactScannerWindowInfo {
 
     #[window_info(rename = "genshin_repository_lock_pos")]
     pub lock_pos: Pos<f64>,
+
+    /// 祝圣之霜圣遗物的偏移量
+    #[window_info(rename = "genshin_artifact_hoarfrost_offset")]
+    pub hoarfrost_offset: Size<f64>,
 }

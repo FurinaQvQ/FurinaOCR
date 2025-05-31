@@ -1,5 +1,6 @@
 use std::hash::{Hash, Hasher};
 
+use furina_core::utils::string_optimizer::parse_stat_optimized;
 use log::error;
 use regex::Regex;
 
@@ -153,7 +154,7 @@ impl ArtifactStatName {
     pub fn from_zh_cn(name: &str, is_percentage: bool) -> Option<ArtifactStatName> {
         match name {
             "治疗加成" => Some(ArtifactStatName::HealingBonus),
-            "暴击伤害" => Some(ArtifactStatName::CriticalDamage),
+            "暴击伤害" | "暴击伤" => Some(ArtifactStatName::CriticalDamage),
             "暴击率" => Some(ArtifactStatName::Critical),
             "攻击力" => {
                 if is_percentage {
@@ -193,6 +194,27 @@ impl ArtifactStatName {
 
 impl ArtifactStat {
     pub fn from_zh_cn_raw(s: &str) -> Option<ArtifactStat> {
+        // 尝试使用优化的解析器
+        match parse_stat_optimized(s) {
+            Ok((name, value, is_percentage)) => {
+                // 将字符串名称转换为枚举
+                if let Some(stat_name) = ArtifactStatName::from_zh_cn(&name, is_percentage) {
+                    Some(ArtifactStat { name: stat_name, value })
+                } else {
+                    error!("未知属性名称: `{name}`");
+                    None
+                }
+            },
+            Err(e) => {
+                error!("属性解析失败: `{s}`, 错误: {e}");
+                // 回退到原始解析方法
+                Self::parse_stat_fallback(s)
+            },
+        }
+    }
+
+    /// 回退解析方法（保持向后兼容）
+    fn parse_stat_fallback(s: &str) -> Option<ArtifactStat> {
         let temp: Vec<&str> = s.split('+').collect();
         if temp.len() != 2 {
             return None;
@@ -206,7 +228,7 @@ impl ArtifactStat {
         let mut value = match re.replace_all(temp[1], "").parse::<f64>() {
             Ok(v) => v,
             Err(_) => {
-                error!("stat `{s}` parse error");
+                error!("属性解析失败: `{s}`");
                 return None;
             },
         };
@@ -764,5 +786,269 @@ impl ArtifactSlot {
             // 未知部位
             _ => None,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_artifact_stat_name_from_zh_cn() {
+        // 测试百分比属性
+        assert_eq!(
+            ArtifactStatName::from_zh_cn("攻击力", true),
+            Some(ArtifactStatName::AtkPercentage)
+        );
+        assert_eq!(
+            ArtifactStatName::from_zh_cn("生命值", true),
+            Some(ArtifactStatName::HpPercentage)
+        );
+        assert_eq!(
+            ArtifactStatName::from_zh_cn("防御力", true),
+            Some(ArtifactStatName::DefPercentage)
+        );
+
+        // 测试固定值属性
+        assert_eq!(ArtifactStatName::from_zh_cn("攻击力", false), Some(ArtifactStatName::Atk));
+        assert_eq!(ArtifactStatName::from_zh_cn("生命值", false), Some(ArtifactStatName::Hp));
+        assert_eq!(ArtifactStatName::from_zh_cn("防御力", false), Some(ArtifactStatName::Def));
+
+        // 测试其他属性
+        assert_eq!(ArtifactStatName::from_zh_cn("暴击率", false), Some(ArtifactStatName::Critical));
+        assert_eq!(
+            ArtifactStatName::from_zh_cn("暴击伤害", false),
+            Some(ArtifactStatName::CriticalDamage)
+        );
+        assert_eq!(
+            ArtifactStatName::from_zh_cn("元素精通", false),
+            Some(ArtifactStatName::ElementalMastery)
+        );
+        assert_eq!(
+            ArtifactStatName::from_zh_cn("元素充能效率", false),
+            Some(ArtifactStatName::Recharge)
+        );
+
+        // 测试元素伤害加成
+        assert_eq!(
+            ArtifactStatName::from_zh_cn("火元素伤害加成", false),
+            Some(ArtifactStatName::PyroBonus)
+        );
+        assert_eq!(
+            ArtifactStatName::from_zh_cn("水元素伤害加成", false),
+            Some(ArtifactStatName::HydroBonus)
+        );
+        assert_eq!(
+            ArtifactStatName::from_zh_cn("雷元素伤害加成", false),
+            Some(ArtifactStatName::ElectroBonus)
+        );
+
+        // 测试无效输入
+        assert_eq!(ArtifactStatName::from_zh_cn("无效属性", false), None);
+    }
+
+    #[test]
+    fn test_artifact_stat_from_zh_cn_raw() {
+        // 测试百分比属性解析
+        let stat = ArtifactStat::from_zh_cn_raw("攻击力+46.6%").unwrap();
+        assert_eq!(stat.name, ArtifactStatName::AtkPercentage);
+        assert!((stat.value - 0.466).abs() < 0.001);
+
+        // 测试固定值属性解析
+        let stat = ArtifactStat::from_zh_cn_raw("攻击力+311").unwrap();
+        assert_eq!(stat.name, ArtifactStatName::Atk);
+        assert!((stat.value - 311.0).abs() < 0.001);
+
+        // 测试暴击率
+        let stat = ArtifactStat::from_zh_cn_raw("暴击率+6.2%").unwrap();
+        assert_eq!(stat.name, ArtifactStatName::Critical);
+        assert!((stat.value - 0.062).abs() < 0.001);
+
+        // 测试元素精通
+        let stat = ArtifactStat::from_zh_cn_raw("元素精通+187").unwrap();
+        assert_eq!(stat.name, ArtifactStatName::ElementalMastery);
+        assert!((stat.value - 187.0).abs() < 0.001);
+
+        // 测试无效格式
+        assert!(ArtifactStat::from_zh_cn_raw("无效格式").is_none());
+        assert!(ArtifactStat::from_zh_cn_raw("攻击力").is_none());
+    }
+
+    #[test]
+    fn test_artifact_stat_equality() {
+        let stat1 = ArtifactStat { name: ArtifactStatName::Critical, value: 0.062 };
+        let stat2 = ArtifactStat {
+            name: ArtifactStatName::Critical,
+            value: 0.0621, // 略微不同的值
+        };
+        let stat3 = ArtifactStat { name: ArtifactStatName::CriticalDamage, value: 0.062 };
+
+        // 相同名称和相近值应该相等（精度到千分位）
+        assert_eq!(stat1, stat2);
+
+        // 不同名称应该不相等
+        assert_ne!(stat1, stat3);
+    }
+
+    #[test]
+    fn test_artifact_set_name_from_zh_cn() {
+        // 测试常见套装（使用具体的圣遗物名称）
+        assert_eq!(
+            ArtifactSetName::from_zh_cn("魔女的炎之花"),
+            Some(ArtifactSetName::CrimsonWitch)
+        );
+        assert_eq!(
+            ArtifactSetName::from_zh_cn("野花记忆的绿野"),
+            Some(ArtifactSetName::ViridescentVenerer)
+        );
+        assert_eq!(
+            ArtifactSetName::from_zh_cn("明威之镡"),
+            Some(ArtifactSetName::EmblemOfSeveredFate)
+        );
+        assert_eq!(ArtifactSetName::from_zh_cn("饰金胸花"), Some(ArtifactSetName::HeartOfDepth));
+
+        // 测试新套装
+        assert_eq!(
+            ArtifactSetName::from_zh_cn("黄金乐曲的变奏"),
+            Some(ArtifactSetName::GoldenTroupe)
+        );
+        assert_eq!(
+            ArtifactSetName::from_zh_cn("猎人的胸花"),
+            Some(ArtifactSetName::MarechausseeHunter)
+        );
+
+        // 测试无效输入
+        assert_eq!(ArtifactSetName::from_zh_cn("无效套装"), None);
+    }
+
+    #[test]
+    fn test_artifact_slot_from_zh_cn() {
+        // 测试生之花
+        assert_eq!(ArtifactSlot::from_zh_cn("魔女的炎之花"), Some(ArtifactSlot::Flower));
+        assert_eq!(ArtifactSlot::from_zh_cn("野花记忆的绿野"), Some(ArtifactSlot::Flower));
+
+        // 测试死之羽
+        assert_eq!(ArtifactSlot::from_zh_cn("魔女常燃之羽"), Some(ArtifactSlot::Feather));
+        assert_eq!(ArtifactSlot::from_zh_cn("猎人青翠的箭羽"), Some(ArtifactSlot::Feather));
+
+        // 测试时之沙
+        assert_eq!(ArtifactSlot::from_zh_cn("魔女破灭之时"), Some(ArtifactSlot::Sand));
+        assert_eq!(ArtifactSlot::from_zh_cn("翠绿猎人的笃定"), Some(ArtifactSlot::Sand));
+
+        // 测试空之杯
+        assert_eq!(ArtifactSlot::from_zh_cn("魔女的心之火"), Some(ArtifactSlot::Goblet));
+        assert_eq!(ArtifactSlot::from_zh_cn("翠绿猎人的容器"), Some(ArtifactSlot::Goblet));
+
+        // 测试理之冠
+        assert_eq!(ArtifactSlot::from_zh_cn("焦灼的魔女帽"), Some(ArtifactSlot::Head));
+        assert_eq!(ArtifactSlot::from_zh_cn("翠绿的猎人之冠"), Some(ArtifactSlot::Head));
+
+        // 测试无效输入
+        assert_eq!(ArtifactSlot::from_zh_cn("无效部位"), None);
+    }
+
+    #[test]
+    fn test_artifact_stat_display() {
+        let stat = ArtifactStat { name: ArtifactStatName::Critical, value: 0.062 };
+
+        // 测试Display trait实现
+        assert_eq!(format!("{}", stat.name), "Critical");
+    }
+
+    #[test]
+    fn test_artifact_slot_display() {
+        assert_eq!(format!("{}", ArtifactSlot::Flower), "Flower");
+        assert_eq!(format!("{}", ArtifactSlot::Feather), "Feather");
+        assert_eq!(format!("{}", ArtifactSlot::Sand), "Sand");
+        assert_eq!(format!("{}", ArtifactSlot::Goblet), "Goblet");
+        assert_eq!(format!("{}", ArtifactSlot::Head), "Head");
+    }
+
+    #[test]
+    fn test_artifact_set_name_display() {
+        assert_eq!(format!("{}", ArtifactSetName::CrimsonWitch), "CrimsonWitch");
+        assert_eq!(format!("{}", ArtifactSetName::ViridescentVenerer), "ViridescentVenerer");
+        assert_eq!(format!("{}", ArtifactSetName::EmblemOfSeveredFate), "EmblemOfSeveredFate");
+    }
+
+    #[test]
+    fn test_genshin_artifact_creation() {
+        let main_stat = ArtifactStat { name: ArtifactStatName::AtkPercentage, value: 0.466 };
+
+        let sub_stat = ArtifactStat { name: ArtifactStatName::Critical, value: 0.062 };
+
+        let artifact = GenshinArtifact {
+            set_name: ArtifactSetName::CrimsonWitch,
+            slot: ArtifactSlot::Sand,
+            star: 5,
+            lock: false,
+            level: 20,
+            main_stat: main_stat.clone(),
+            sub_stat_1: Some(sub_stat.clone()),
+            sub_stat_2: None,
+            sub_stat_3: None,
+            sub_stat_4: None,
+            equip: Some("迪卢克".to_string()),
+        };
+
+        assert_eq!(artifact.set_name, ArtifactSetName::CrimsonWitch);
+        assert_eq!(artifact.slot, ArtifactSlot::Sand);
+        assert_eq!(artifact.star, 5);
+        assert_eq!(artifact.level, 20);
+        assert_eq!(artifact.main_stat, main_stat);
+        assert_eq!(artifact.sub_stat_1, Some(sub_stat));
+        assert_eq!(artifact.equip, Some("迪卢克".to_string()));
+    }
+
+    #[test]
+    fn test_artifact_hash_and_equality() {
+        let stat1 = ArtifactStat { name: ArtifactStatName::Critical, value: 0.062 };
+        let stat2 = ArtifactStat {
+            name: ArtifactStatName::Critical,
+            value: 0.0621, // 略微不同但在精度范围内
+        };
+
+        let artifact1 = GenshinArtifact {
+            set_name: ArtifactSetName::CrimsonWitch,
+            slot: ArtifactSlot::Sand,
+            star: 5,
+            lock: false,
+            level: 20,
+            main_stat: stat1.clone(),
+            sub_stat_1: Some(stat1.clone()),
+            sub_stat_2: None,
+            sub_stat_3: None,
+            sub_stat_4: None,
+            equip: None,
+        };
+
+        let artifact2 = GenshinArtifact {
+            set_name: ArtifactSetName::CrimsonWitch,
+            slot: ArtifactSlot::Sand,
+            star: 5,
+            lock: false,
+            level: 20,
+            main_stat: stat2.clone(),
+            sub_stat_1: Some(stat2.clone()),
+            sub_stat_2: None,
+            sub_stat_3: None,
+            sub_stat_4: None,
+            equip: None,
+        };
+
+        // 测试相等性（应该相等，因为数值差异在精度范围内）
+        assert_eq!(artifact1, artifact2);
+
+        // 测试哈希一致性
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+
+        let mut hasher1 = DefaultHasher::new();
+        let mut hasher2 = DefaultHasher::new();
+
+        artifact1.hash(&mut hasher1);
+        artifact2.hash(&mut hasher2);
+
+        assert_eq!(hasher1.finish(), hasher2.finish());
     }
 }

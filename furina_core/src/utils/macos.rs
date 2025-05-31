@@ -52,9 +52,6 @@ pub fn get_titlebar_height() -> f64 {
             )
             .autorelease()
     };
-    println!("{}", unsafe {
-        ns_size.height - ns_window.contentRectForFrameRect_(ns_rect).size.height
-    });
     unsafe { ns_size.height - ns_window.contentRectForFrameRect_(ns_rect).size.height }
 }
 

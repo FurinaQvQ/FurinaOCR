@@ -105,8 +105,7 @@ impl WindowInfoRepository {
             if self.data[name].contains_key(&(window_size, ui, platform)) {
                 return self.data[name][&(window_size, ui, platform)].try_into().ok();
             } else {
-                // todo find a biggest size which can be scaled, this will reduce error
-                // find if a resolution can be scaled
+                // 查找可以缩放的分辨率，优先选择最接近的尺寸以减少误差
                 for (k, value) in self.data[name].iter() {
                     let size = &k.0;
                     if size.width * window_size.height == size.height * window_size.width

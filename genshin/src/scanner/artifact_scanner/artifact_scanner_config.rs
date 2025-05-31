@@ -1,4 +1,4 @@
-#[derive(Clone, clap::Args)]
+#[derive(Clone, clap::Args, Default)]
 pub struct GenshinArtifactScannerConfig {
     /// Items with stars less than this will be ignored
     #[arg(

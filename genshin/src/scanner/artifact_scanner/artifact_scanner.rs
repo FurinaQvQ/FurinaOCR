@@ -282,11 +282,14 @@ impl GenshinArtifactScanner {
             Self::MAX_COUNT as i32
         });
 
-        let worker =
-            ArtifactScannerWorker::new(self.window_info.clone(), self.scanner_config.clone())?;
+        let window_size = (self.game_info.window.width as u32, self.game_info.window.height as u32);
+        let worker = ArtifactScannerWorker::new(
+            self.window_info.clone(),
+            self.scanner_config.clone(),
+            window_size,
+        )?;
 
         let join_handle = worker.run(rx);
-        info!("Worker created");
 
         self.send(&tx, count);
 
@@ -405,7 +408,6 @@ impl GenshinArtifactScanner {
 
                     artifact_index += 1;
 
-                    // todo normalize types
                     if (star as i32) < self.scanner_config.min_star {
                         info!(
                             "找到满足最低星级要求 {} 的物品，准备退出……",
@@ -417,8 +419,6 @@ impl GenshinArtifactScanner {
                     if tx.send(Some(SendItem { panel_image: image, star, list_image })).is_err() {
                         break;
                     }
-
-                    // scanned_count += 1;
                 },
                 CoroutineState::Complete(result) => {
                     match result {

@@ -391,7 +391,6 @@ fn equip_from_zh_cn(equip: Option<&str>) -> &'static str {
 ///     let artifacts = vec![/* 圣遗物数据 */];
 ///     let good_format = GOODFormat::new(&artifacts);
 ///     let json = serde_json::to_string_pretty(&good_format)?;
-///     println!("{}", json);
 ///     Ok(())
 /// }
 /// ```
@@ -422,7 +421,6 @@ impl<'a> GOODFormat<'a> {
     ///     let artifacts = vec![/* 圣遗物数据 */];
     ///     let good_format = GOODFormat::new(&artifacts);
     ///     let json = serde_json::to_string_pretty(&good_format)?;
-    ///     println!("{}", json);
     ///     Ok(())
     /// }
     /// ```

@@ -1,11 +1,13 @@
 [package]
 name = "derive"
 version.workspace = true
-edition = "2021"
+edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Derive macros for FurinaOCR"
+description = "Derive macros for FurinaOCR - based on yas_core"
+keywords.workspace = true
+homepage.workspace = true
 
 [lib]
 proc-macro = true

@@ -6,13 +6,6 @@ too-many-arguments-threshold = 15
 type-complexity-threshold = 1000
 too-many-lines-threshold = 500
 
-# 测试相关配置
-allow-dbg-in-tests = true
-allow-expect-in-tests = true
-allow-panic-in-tests = true
-allow-print-in-tests = true
-allow-unwrap-in-tests = true
-
 # 不允许的方法 - 只保留最关键的
 disallowed-methods = []
 

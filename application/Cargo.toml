@@ -1,11 +1,13 @@
 [package]
 name = "FurinaOCR"
-version = "0.1.0"
-edition = "2021"
-authors = ["FurinaQvQ"]
-description = "专注于原神圣遗物扫描的高效工具"
-
-
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+homepage.workspace = true
 
 [dependencies]
 furina_core = { path = "../furina_core" }

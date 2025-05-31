@@ -1,11 +1,13 @@
 [package]
 name = "genshin"
 version.workspace = true
-edition = "2021"
+edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Genshin Impact specific implementations for FurinaOCR"
+description = "Genshin Impact specific implementations for FurinaOCR - based on yas_core"
+keywords.workspace = true
+homepage.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

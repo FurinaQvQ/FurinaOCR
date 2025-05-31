@@ -112,14 +112,27 @@ pub fn is_admin() -> bool {
     unsafe { is_admin_unsafe() }
 }
 
+/// 检测鼠标右键当前是否处于按下状态
+///
+/// 使用 Windows API GetAsyncKeyState 检测右键的实时状态。
+/// 
+/// # 返回值
+/// - `true`: 右键当前正在被按下
+/// - `false`: 右键当前未被按下
+/// 
+/// # GetAsyncKeyState 返回值说明
+/// - 位0（最低位）: 表示按键在上次调用后是否被按下过（历史状态）
+/// - 位15（最高位，0x8000）: 表示按键当前是否处于按下状态（实时状态）
+/// 
+/// # 安全性
+/// 此函数使用 unsafe 块调用 Windows API，但在正常使用情况下是安全的。
 pub fn is_rmb_down() -> bool {
     unsafe {
         let state = GetAsyncKeyState(VK_RBUTTON as i32);
-        if state == 0 {
-            return false;
-        }
-
-        state & 1 > 0
+        // 检测当前按键状态（位15）而非历史状态（位0）
+        // GetAsyncKeyState 返回 i16，最高位为1时表示按键被按下
+        // 使用负数检测更简洁，因为 i16 的最高位为符号位
+        state < 0
     }
 }
 
@@ -128,7 +141,6 @@ pub fn set_dpi_awareness() {
         let utf16 = encode_lpcstr("Shcore.dll");
         LoadLibraryA(utf16.as_ptr())
     };
-    println!("{h_lib:?}");
     if h_lib.is_null() {
         unsafe {
             SetProcessDPIAware();
@@ -136,7 +148,6 @@ pub fn set_dpi_awareness() {
     } else {
         unsafe {
             let addr = GetProcAddress(h_lib, encode_lpcstr("SetProcessDpiAwareness").as_ptr());
-            println!("{addr:?}");
             if let Some(proc) = addr {
                 let func = transmute::<
                     unsafe extern "system" fn() -> isize,

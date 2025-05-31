@@ -21,21 +21,11 @@ fn get_window(window_names: &[&str]) -> Result<(HWND, bool)> {
 
             for name in window_names.iter() {
                 if trimmed == *name {
-                    // return Ok((*hwnd, false));
                     viable_handles.push((*hwnd, String::from(trimmed)));
                 }
             }
         }
     }
-
-    // cloud games
-    // let cloud_game_names = [""]
-    // for name in get_cloud_window_name() {
-    //     let hwnd = utils::find_window_local(name);
-    //     if let Ok(hwnd) = hwnd {
-    //         return (hwnd, true);
-    //     }
-    // }
 
     if viable_handles.len() == 1 {
         return Ok((viable_handles[0].0, is_window_cloud(&viable_handles[0].1)));
@@ -75,14 +65,11 @@ pub fn get_game_info(window_names: &[&str]) -> Result<GameInfo> {
     utils::sleep(1000);
 
     let rect = utils::get_client_rect(hwnd)?;
-    let resolution_family = ResolutionFamily::new(rect.to_rect_usize().size());
-    if resolution_family.is_none() {
-        return Err(anyhow!("Resolution not supported: {}x{}", rect.width, rect.height));
-    }
+    let resolution_family = ResolutionFamily::new(rect.width as u32, rect.height as u32)?;
 
     Ok(GameInfo {
         window: rect,
-        resolution_family: resolution_family.unwrap(),
+        resolution_family,
         is_cloud,
         ui: UI::Desktop,
         platform: Platform::Windows,
