@@ -140,31 +140,31 @@ jobs:
         echo "" >> test-report.md
         
         # 运行测试并收集结果
-        cargo test --all 2>&1 | tee test-output.txt
+        cargo test --all 2>&1 | Tee-Object test-output.txt
         
         # 检查测试是否全部通过
-        if grep -q "test result: ok" test-output.txt; then
+        if (Select-String -Path test-output.txt -Pattern "test result: ok") {
           echo "✅ 所有测试通过" >> test-report.md
-        else
+        } else {
           echo "❌ 测试失败" >> test-report.md
-        fi
+        }
         
         echo "" >> test-report.md
         echo "### 代码质量检查" >> test-report.md
         
         # Clippy检查
-        if cargo clippy --all-targets -- -D warnings; then
+        if (cargo clippy --all-targets -- -D warnings) {
           echo "✅ Clippy检查通过（零警告）" >> test-report.md
-        else
+        } else {
           echo "❌ Clippy检查失败" >> test-report.md
-        fi
+        }
         
         # 格式检查
-        if cargo fmt --all --check; then
+        if (cargo fmt --all --check) {
           echo "✅ 代码格式正确" >> test-report.md
-        else
+        } else {
           echo "❌ 代码格式需要调整" >> test-report.md
-        fi
+        }
 
     - name: Upload test report
       uses: actions/upload-artifact@v4

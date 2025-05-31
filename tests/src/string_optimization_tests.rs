@@ -5,9 +5,9 @@ use furina_core::utils::string_optimizer::{
     parse_level_optimized, parse_stat_optimized, StringOptimizer, StringPool,
 };
 
-/// 测试字符串优化器的基本功能
+/// Test basic functionality of string optimizer
 #[test]
-fn test_string_optimizer_basic_functionality() {
+fn test_string_optimizer_basic() {
     let mut optimizer = StringOptimizer::new();
 
     // 测试正常的属性解析
@@ -20,7 +20,7 @@ fn test_string_optimizer_basic_functionality() {
     assert!(is_percentage);
 }
 
-/// 测试字符串优化器的性能提升
+/// Test performance improvement of string optimizer
 #[test]
 fn test_string_optimizer_performance() {
     let mut optimizer = StringOptimizer::new();
@@ -52,9 +52,9 @@ fn test_string_optimizer_performance() {
     assert!(elapsed.as_millis() < 2000, "字符串优化器性能测试超时: {elapsed:?}");
 }
 
-/// 测试全局便利函数
+/// Test global convenience functions
 #[test]
-fn test_global_convenience_functions() {
+fn test_global_functions() {
     // 测试属性解析
     let result = parse_stat_optimized("元素精通+165");
     assert!(result.is_ok());
@@ -70,9 +70,9 @@ fn test_global_convenience_functions() {
     assert_eq!(level.unwrap(), 20);
 }
 
-/// 测试字符串池功能
+/// Test string pool functionality
 #[test]
-fn test_string_pool_efficiency() {
+fn test_string_pool() {
     let mut pool = StringPool::new();
 
     // 相同字符串应该返回相同引用
@@ -82,7 +82,94 @@ fn test_string_pool_efficiency() {
     assert!(std::ptr::eq(str1, str2));
 }
 
-/// 模糊测试字符串优化器
+/// Test zero-copy string cleanup functionality
+#[test]
+fn test_zero_copy_string_cleanup() {
+    let optimizer = StringOptimizer::new();
+
+    // 测试不需要清理的字符串（应该零拷贝）
+    let clean_str = "攻击力加成数值";
+    let result = optimizer.fast_clean_string(clean_str, &['%', ',', '+']);
+
+    match result {
+        std::borrow::Cow::Borrowed(borrowed) => {
+            // 验证是零拷贝
+            assert!(std::ptr::eq(borrowed.as_ptr(), clean_str.as_ptr()));
+        },
+        std::borrow::Cow::Owned(_) => {
+            panic!("期望零拷贝，但产生了新分配");
+        },
+    }
+
+    // 测试需要清理的字符串
+    let dirty_str = "攻击力+46.6%";
+    let result = optimizer.fast_clean_string(dirty_str, &['%', '+']);
+
+    match result {
+        std::borrow::Cow::Borrowed(_) => {
+            panic!("期望新分配，但使用了零拷贝");
+        },
+        std::borrow::Cow::Owned(cleaned) => {
+            assert_eq!(cleaned, "攻击力46.6");
+        },
+    }
+}
+
+/// Test batch processing functionality
+#[test]
+fn test_batch_processing() {
+    let mut optimizer = StringOptimizer::new();
+
+    let stats = vec![
+        "攻击力+46.6%".to_string(),
+        "暴击率+12.1%".to_string(),
+        "暴击伤害+22.5%".to_string(),
+        "无效格式".to_string(),
+        "生命值+4780".to_string(),
+    ];
+
+    let results = optimizer.batch_process_stats(&stats);
+
+    assert_eq!(results.len(), 5);
+
+    // 前3个和最后1个应该成功
+    assert!(results[0].is_ok());
+    assert!(results[1].is_ok());
+    assert!(results[2].is_ok());
+    assert!(results[3].is_err()); // 无效格式
+    assert!(results[4].is_ok());
+
+    // 验证解析结果
+    if let Ok((name, value, is_percentage)) = &results[0] {
+        assert_eq!(name, "攻击力");
+        assert!((value - 0.466).abs() < f64::EPSILON);
+        assert!(*is_percentage);
+    }
+}
+
+/// Test error handling robustness
+#[test]
+fn test_error_handling_robustness() {
+    let mut optimizer = StringOptimizer::new();
+
+    let invalid_inputs = vec![
+        "",                   // 空字符串
+        "+",                  // 只有分隔符
+        "攻击力",             // 缺少数值
+        "+46.6%",             // 缺少属性名
+        "攻击力+abc",         // 无效数值
+        "攻击力+46.6%+extra", // 多余部分
+        "攻击力++46.6%",      // 多个分隔符
+    ];
+
+    for input in invalid_inputs {
+        let result = optimizer.parse_attribute_value(input);
+        // 所有无效输入都应该返回错误，而不是崩溃
+        assert!(result.is_err(), "输入 '{input}' 应该返回错误");
+    }
+}
+
+/// Test string optimizer fuzzing
 #[test]
 fn test_string_optimizer_fuzz() {
     let config = FuzzConfig {
@@ -120,72 +207,7 @@ fn test_string_optimizer_fuzz() {
     assert!(handled_rate >= 95.0, "字符串优化器处理率过低: {handled_rate:.1}%");
 }
 
-/// 测试零拷贝字符串清理功能
-#[test]
-fn test_zero_copy_string_cleaning() {
-    let optimizer = StringOptimizer::new();
-
-    // 测试不需要清理的字符串（应该零拷贝）
-    let clean_str = "攻击力加成数值";
-    let result = optimizer.fast_clean_string(clean_str, &['%', ',', '+']);
-
-    match result {
-        std::borrow::Cow::Borrowed(borrowed) => {
-            // 验证是零拷贝
-            assert!(std::ptr::eq(borrowed.as_ptr(), clean_str.as_ptr()));
-        },
-        std::borrow::Cow::Owned(_) => {
-            panic!("期望零拷贝，但产生了新分配");
-        },
-    }
-
-    // 测试需要清理的字符串
-    let dirty_str = "攻击力+46.6%";
-    let result = optimizer.fast_clean_string(dirty_str, &['%', '+']);
-
-    match result {
-        std::borrow::Cow::Borrowed(_) => {
-            panic!("期望新分配，但使用了零拷贝");
-        },
-        std::borrow::Cow::Owned(cleaned) => {
-            assert_eq!(cleaned, "攻击力46.6");
-        },
-    }
-}
-
-/// 测试批量处理功能
-#[test]
-fn test_batch_processing() {
-    let mut optimizer = StringOptimizer::new();
-
-    let stats = vec![
-        "攻击力+46.6%".to_string(),
-        "暴击率+12.1%".to_string(),
-        "暴击伤害+22.5%".to_string(),
-        "无效格式".to_string(),
-        "生命值+4780".to_string(),
-    ];
-
-    let results = optimizer.batch_process_stats(&stats);
-
-    assert_eq!(results.len(), 5);
-
-    // 前3个和最后1个应该成功
-    assert!(results[0].is_ok());
-    assert!(results[1].is_ok());
-    assert!(results[2].is_ok());
-    assert!(results[3].is_err()); // 无效格式
-    assert!(results[4].is_ok());
-
-    // 验证解析结果
-    if let Ok((name, value, is_percentage)) = &results[0] {
-        assert_eq!(name, "攻击力");
-        assert!((value - 0.466).abs() < f64::EPSILON);
-        assert!(*is_percentage);
-    }
-}
-
-/// 性能对比测试：优化前vs优化后
+/// Performance comparison test: before vs after optimization
 #[test]
 fn test_performance_comparison() {
     use regex::Regex;
@@ -224,26 +246,4 @@ fn test_performance_comparison() {
     // 在某些情况下甚至可能更快（由于正则表达式缓存）
     let ratio = optimized_time.as_nanos() as f64 / traditional_time.as_nanos() as f64;
     assert!(ratio < 3.0, "优化方法比传统方法慢太多: {ratio:.2}倍");
-}
-
-/// 测试错误处理的鲁棒性
-#[test]
-fn test_error_handling_robustness() {
-    let mut optimizer = StringOptimizer::new();
-
-    let invalid_inputs = vec![
-        "",                   // 空字符串
-        "+",                  // 只有分隔符
-        "攻击力",             // 缺少数值
-        "+46.6%",             // 缺少属性名
-        "攻击力+abc",         // 无效数值
-        "攻击力+46.6%+extra", // 多余部分
-        "攻击力++46.6%",      // 多个分隔符
-    ];
-
-    for input in invalid_inputs {
-        let result = optimizer.parse_attribute_value(input);
-        // 所有无效输入都应该返回错误，而不是崩溃
-        assert!(result.is_err(), "输入 '{input}' 应该返回错误");
-    }
 }

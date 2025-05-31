@@ -29,7 +29,7 @@ impl RecoverableError for TestError {
     }
 }
 
-/// 测试立即重试策略
+/// Test immediate retry strategy
 #[tokio::test]
 async fn test_immediate_retry_strategy() {
     let manager = ErrorRecoveryManager::new_default();
@@ -43,32 +43,32 @@ async fn test_immediate_retry_strategy() {
                 let count = counter.fetch_add(1, Ordering::SeqCst);
                 if count < 2 {
                     Err(TestError {
-                        message: "临时错误".to_string(),
+                        message: "temporary error".to_string(),
                         category: ErrorCategory::Temporary,
                         is_retryable: true,
                     })
                 } else {
-                    Ok("成功".to_string())
+                    Ok("success".to_string())
                 }
             }
         }
     };
 
     let error = TestError {
-        message: "初始错误".to_string(),
+        message: "initial error".to_string(),
         category: ErrorCategory::Temporary,
         is_retryable: true,
     };
 
     let result = manager.attempt_recovery(operation, &error).await;
     assert!(result.is_ok());
-    assert_eq!(result.unwrap(), "成功");
+    assert_eq!(result.unwrap(), "success");
 
-    // 应该调用3次（初始失败 + 2次重试成功）
+    // should call 3 times (initial failure + 2 times retry success)
     assert_eq!(counter.load(Ordering::SeqCst), 3);
 }
 
-/// 测试指数退避重试策略
+/// Test exponential backoff retry strategy
 #[tokio::test]
 async fn test_exponential_backoff_strategy() {
     let manager = ErrorRecoveryManager::new_default();
@@ -83,19 +83,19 @@ async fn test_exponential_backoff_strategy() {
                 let count = counter.fetch_add(1, Ordering::SeqCst);
                 if count < 2 {
                     Err(TestError {
-                        message: "网络错误".to_string(),
+                        message: "network error".to_string(),
                         category: ErrorCategory::Network,
                         is_retryable: true,
                     })
                 } else {
-                    Ok("网络恢复".to_string())
+                    Ok("network recovery".to_string())
                 }
             }
         }
     };
 
     let error = TestError {
-        message: "网络连接失败".to_string(),
+        message: "network connection failure".to_string(),
         category: ErrorCategory::Network,
         is_retryable: true,
     };
@@ -104,13 +104,13 @@ async fn test_exponential_backoff_strategy() {
     let elapsed = start_time.elapsed();
 
     assert!(result.is_ok());
-    assert_eq!(result.unwrap(), "网络恢复");
+    assert_eq!(result.unwrap(), "network recovery");
 
-    // 应该有延迟（指数退避）
+    // should have delay (exponential backoff)
     assert!(elapsed >= Duration::from_millis(100));
 }
 
-/// 测试最大重试次数限制
+/// Test maximum retry limit
 #[tokio::test]
 async fn test_max_retries_exceeded() {
     let manager = ErrorRecoveryManager::new_default();
@@ -123,7 +123,7 @@ async fn test_max_retries_exceeded() {
             async move {
                 counter.fetch_add(1, Ordering::SeqCst);
                 Err(TestError {
-                    message: "持续失败".to_string(),
+                    message: "persistent failure".to_string(),
                     category: ErrorCategory::Network,
                     is_retryable: true,
                 })
@@ -132,7 +132,7 @@ async fn test_max_retries_exceeded() {
     };
 
     let error = TestError {
-        message: "初始错误".to_string(),
+        message: "initial error".to_string(),
         category: ErrorCategory::Network,
         is_retryable: true,
     };
@@ -143,22 +143,22 @@ async fn test_max_retries_exceeded() {
 
     match result.unwrap_err() {
         RecoveryError::MaxRetriesExceeded(_) => {},
-        _ => panic!("期望MaxRetriesExceeded错误"),
+        _ => panic!("expected MaxRetriesExceeded error"),
     }
 
-    // 应该尝试了默认的最大重试次数
+    // should attempt default maximum retry count
     assert_eq!(counter.load(Ordering::SeqCst), 3);
 }
 
-/// 测试不可重试错误的处理
+/// Test non-retryable error handling
 #[tokio::test]
 async fn test_non_retryable_error() {
     let manager = ErrorRecoveryManager::new_default();
 
-    let operation = || async { Ok("不应该被调用".to_string()) };
+    let operation = || async { Ok("should not be called".to_string()) };
 
     let error = TestError {
-        message: "配置错误".to_string(),
+        message: "configuration error".to_string(),
         category: ErrorCategory::Configuration,
         is_retryable: false,
     };
@@ -168,21 +168,21 @@ async fn test_non_retryable_error() {
 
     match result.unwrap_err() {
         RecoveryError::RecoveryAborted(_) => {},
-        _ => panic!("期望RecoveryAborted错误"),
+        _ => panic!("expected RecoveryAborted error"),
     }
 }
 
-/// 测试错误统计功能
+/// Test error statistics functionality
 #[test]
 fn test_error_statistics() {
     let mut stats = ErrorStatistics::default();
 
-    // 记录各种错误
+    // record various errors
     stats.record_error(ErrorCategory::Network);
     stats.record_error(ErrorCategory::OCR);
     stats.record_error(ErrorCategory::Parsing);
 
-    // 记录恢复结果
+    // record recovery results
     stats.record_successful_recovery();
     stats.record_successful_recovery();
     stats.record_failed_recovery();
@@ -191,19 +191,19 @@ fn test_error_statistics() {
     assert_eq!(stats.successful_recoveries, 2);
     assert_eq!(stats.failed_recoveries, 1);
 
-    // 测试错误率计算
+    // test error rate calculation
     assert!((stats.error_rate() - 0.333).abs() < 0.01); // 1 failed / 3 total = 0.33
 
-    // 测试恢复成功率
+    // test recovery success rate
     assert!((stats.recovery_success_rate() - 0.667).abs() < 0.01); // 2 success / 3 attempts = 0.67
 
-    // 测试分类统计
+    // test category statistics
     assert_eq!(stats.category_counts[&ErrorCategory::Network], 1);
     assert_eq!(stats.category_counts[&ErrorCategory::OCR], 1);
     assert_eq!(stats.category_counts[&ErrorCategory::Parsing], 1);
 }
 
-/// 测试自定义恢复配置
+/// Test custom recovery configuration
 #[tokio::test]
 async fn test_custom_recovery_config() {
     let config = RecoveryConfig {
@@ -230,19 +230,19 @@ async fn test_custom_recovery_config() {
                 let count = counter.fetch_add(1, Ordering::SeqCst);
                 if count < 4 {
                     Err(TestError {
-                        message: "OCR识别失败".to_string(),
+                        message: "OCR recognition failure".to_string(),
                         category: ErrorCategory::OCR,
                         is_retryable: true,
                     })
                 } else {
-                    Ok("OCR成功".to_string())
+                    Ok("OCR success".to_string())
                 }
             }
         }
     };
 
     let error = TestError {
-        message: "OCR错误".to_string(),
+        message: "OCR error".to_string(),
         category: ErrorCategory::OCR,
         is_retryable: true,
     };
@@ -252,15 +252,15 @@ async fn test_custom_recovery_config() {
     let elapsed = start_time.elapsed();
 
     assert!(result.is_ok());
-    assert_eq!(result.unwrap(), "OCR成功");
+    assert_eq!(result.unwrap(), "OCR success");
 
-    // 应该有延迟（每次重试前延迟50ms）
-    assert!(elapsed >= Duration::from_millis(200)); // 至少4次延迟
-                                                    // 应该调用5次（初始 + 4次重试）
+    // should have delay (50ms delay before each retry)
+    assert!(elapsed >= Duration::from_millis(200)); // at least 4 times delay
+                                                    // should call 5 times (initial + 4 retries)
     assert_eq!(counter.load(Ordering::SeqCst), 5);
 }
 
-/// 测试跳过操作策略
+/// Test skip operation strategy
 #[tokio::test]
 async fn test_skip_operation_strategy() {
     let mut config = RecoveryConfig::default();
@@ -269,11 +269,11 @@ async fn test_skip_operation_strategy() {
     let manager = ErrorRecoveryManager::new(config);
 
     let operation = || async {
-        panic!("操作不应该被执行");
+        panic!("operation should not be executed");
     };
 
     let error = TestError {
-        message: "解析错误".to_string(),
+        message: "parsing error".to_string(),
         category: ErrorCategory::Parsing,
         is_retryable: true,
     };
@@ -284,11 +284,11 @@ async fn test_skip_operation_strategy() {
 
     match result.unwrap_err() {
         RecoveryError::OperationSkipped => {},
-        _ => panic!("期望OperationSkipped错误"),
+        _ => panic!("expected OperationSkipped error"),
     }
 }
 
-/// 测试使用默认值策略
+/// Test use default strategy
 #[tokio::test]
 async fn test_use_default_strategy() {
     let mut config = RecoveryConfig::default();
@@ -298,14 +298,14 @@ async fn test_use_default_strategy() {
 
     let operation = || async {
         Err(TestError {
-            message: "解析失败".to_string(),
+            message: "parsing failure".to_string(),
             category: ErrorCategory::Parsing,
             is_retryable: true,
         })
     };
 
     let error = TestError {
-        message: "解析错误".to_string(),
+        message: "parsing error".to_string(),
         category: ErrorCategory::Parsing,
         is_retryable: true,
     };
@@ -316,11 +316,11 @@ async fn test_use_default_strategy() {
 
     match result.unwrap_err() {
         RecoveryError::UseDefaultRequested => {},
-        _ => panic!("期望UseDefaultRequested错误"),
+        _ => panic!("expected UseDefaultRequested error"),
     }
 }
 
-/// 测试错误阈值机制
+/// Test error threshold mechanism
 #[tokio::test]
 async fn test_error_threshold_mechanism() {
     let mut config = RecoveryConfig::default();
@@ -328,18 +328,18 @@ async fn test_error_threshold_mechanism() {
 
     let manager = ErrorRecoveryManager::new(config);
 
-    // 先产生一些失败，达到阈值
+    // first produce some failures, reach threshold
     for _ in 0..3 {
         let operation = || async {
             Err(TestError {
-                message: "网络错误".to_string(),
+                message: "network error".to_string(),
                 category: ErrorCategory::Network,
                 is_retryable: true,
             })
         };
 
         let error = TestError {
-            message: "网络连接失败".to_string(),
+            message: "network connection failure".to_string(),
             category: ErrorCategory::Network,
             is_retryable: true,
         };
@@ -348,13 +348,13 @@ async fn test_error_threshold_mechanism() {
             manager.attempt_recovery(operation, &error).await;
     }
 
-    // 现在应该拒绝进一步的恢复尝试
+    // now should refuse further recovery attempts
     let operation = || async {
-        panic!("操作不应该被执行");
+        panic!("operation should not be executed");
     };
 
     let error = TestError {
-        message: "又一个网络错误".to_string(),
+        message: "another network error".to_string(),
         category: ErrorCategory::Network,
         is_retryable: true,
     };
@@ -365,28 +365,28 @@ async fn test_error_threshold_mechanism() {
 
     match result.unwrap_err() {
         RecoveryError::RecoveryAborted(_) => {},
-        _ => panic!("期望RecoveryAborted错误"),
+        _ => panic!("expected RecoveryAborted error"),
     }
 }
 
-/// 测试统计信息清理功能
+/// Test statistics cleanup functionality
 #[test]
 fn test_statistics_cleanup() {
     let manager = ErrorRecoveryManager::new_default();
 
-    // 通过执行操作来添加统计数据
+    // add statistics data by executing operations
     let rt = tokio::runtime::Runtime::new().unwrap();
     rt.block_on(async {
         let operation = || async {
             Err(TestError {
-                message: "测试错误".to_string(),
+                message: "test error".to_string(),
                 category: ErrorCategory::Network,
                 is_retryable: true,
             })
         };
 
         let error = TestError {
-            message: "测试错误".to_string(),
+            message: "test error".to_string(),
             category: ErrorCategory::Network,
             is_retryable: true,
         };
@@ -395,20 +395,20 @@ fn test_statistics_cleanup() {
             manager.attempt_recovery(operation, &error).await;
     });
 
-    // 执行清理
+    // execute cleanup
     manager.cleanup_statistics();
 
-    // 验证统计数据存在
+    // verify statistics data exists
     let stats = manager.get_statistics();
     assert!(stats.total_errors > 0);
 }
 
-/// 测试时间窗口内错误计数
+/// Test error count in time window
 #[test]
 fn test_error_count_in_time_window() {
     let mut stats = ErrorStatistics::default();
 
-    // 添加不同时间的错误
+    // add errors at different times
     stats
         .recent_errors
         .push((std::time::Instant::now() - Duration::from_secs(120), ErrorCategory::Network));
@@ -417,19 +417,19 @@ fn test_error_count_in_time_window() {
         .push((std::time::Instant::now() - Duration::from_secs(30), ErrorCategory::OCR));
     stats.recent_errors.push((std::time::Instant::now(), ErrorCategory::Parsing));
 
-    // 检查1分钟内的错误数量
+    // check error count in 1 minute
     let count = stats.error_count_in_window(Duration::from_secs(60));
-    assert_eq!(count, 2); // 应该只包含最近的2个错误
+    assert_eq!(count, 2); // should only include recent 2 errors
 }
 
-/// 压力测试：大量并发错误恢复
+/// Stress test: large concurrent error recovery
 #[tokio::test]
 async fn test_concurrent_error_recovery() {
     let mut handles = vec![];
 
     for i in 0..10 {
         let handle = tokio::spawn(async move {
-            // 每个任务使用独立的管理器实例，避免竞争条件
+            // each task uses independent manager instance, avoid race conditions
             let manager = ErrorRecoveryManager::new_default();
             let counter = Arc::new(AtomicUsize::new(0));
 
@@ -441,19 +441,19 @@ async fn test_concurrent_error_recovery() {
                         let count = counter.fetch_add(1, Ordering::SeqCst);
                         if count < 1 {
                             Err(TestError {
-                                message: format!("错误-{i}"),
+                                message: format!("error-{i}"),
                                 category: ErrorCategory::Temporary,
                                 is_retryable: true,
                             })
                         } else {
-                            Ok(format!("成功-{i}"))
+                            Ok(format!("success-{i}"))
                         }
                     }
                 }
             };
 
             let error = TestError {
-                message: format!("初始错误-{i}"),
+                message: format!("initial error-{i}"),
                 category: ErrorCategory::Temporary,
                 is_retryable: true,
             };
@@ -464,7 +464,7 @@ async fn test_concurrent_error_recovery() {
         handles.push(handle);
     }
 
-    // 等待所有任务完成
+    // wait for all tasks to complete
     let mut success_count = 0;
     for handle in handles {
         if let Ok(Ok(_)) = handle.await {
@@ -472,6 +472,6 @@ async fn test_concurrent_error_recovery() {
         }
     }
 
-    // 所有恢复都应该成功
+    // all recoveries should succeed
     assert_eq!(success_count, 10);
 }
