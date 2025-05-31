@@ -363,7 +363,7 @@ jobs:
           cp LICENSE artifacts/
       
       - name: 📤 上传制品
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: furina-ocr-${{ matrix.target }}
           path: artifacts/
@@ -420,7 +420,7 @@ jobs:
           echo "- 最大复杂度: ${MAX_COMPLEXITY}" >> quality-report.md
       
       - name: 📤 上传质量报告
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: quality-report
           path: quality-report.md
